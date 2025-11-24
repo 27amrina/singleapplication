@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Apersepsi • Single Application</title>
+
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --navbar-h: 55px;
+            --footer-h: 40px;
+            --brand: #ff3f8e;
+            --sidebar-w: 255px;
+            --sidebar-gap: 8px;
+            --line: #ff3f8e;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            padding-bottom: var(--footer-h);
+            background: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .main-pad {
+            padding-top: var(--navbar-h);
+        }
+
+        main.app-shell {
+            min-height: calc(100vh - var(--navbar-h) - var(--footer-h));
+        }
+
+        .navbar,
+        .footer {
+            background: #fff;
+        }
+
+        .footer {
+            border-top: 1px solid #eee;
+        }
+
+        .menu-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+        }
+
+        .menu-title {
+            padding: .75rem 1rem;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            display: block;
+            padding: .6rem 1rem;
+            color: inherit;
+            text-decoration: none;
+            font-size: .95rem;
+        }
+
+        .menu-item:hover {
+            background: #fafafa;
+        }
+
+        .menu-item.active {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+
+        .no-top-gap>aside,
+        .no-top-gap>section {
+            padding-top: 0 !important;
+        }
+
+        .btn-brand {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .btn-brand:hover {
+            color: #fff;
+            filter: brightness(.95);
+        }
+
+        .materi-card .card-header {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: .5rem 1rem;
+        }
+
+        .page-nav {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-nav-inner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Mobile: sidebar ikut alur */
+        @media (max-width: 767.98px) {
+            .sidebar-fixed {
+                position: static;
+                width: 100%;
+            }
+        }
+
+        /* Desktop: sidebar fixed kiri, konten bergeser & card dipendekkan */
+        @media (min-width: 768px) {
+            .sidebar-fixed {
+                position: fixed;
+                top: var(--navbar-h);
+                left: 0;
+                width: var(--sidebar-w);
+                height: calc(100dvh - var(--navbar-h));
+                overflow-y: auto;
+            }
+
+            .content-with-fixed {
+                margin-left: calc(var(--sidebar-w) + var(--sidebar-gap));
+            }
+
+            .materi-card {
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100dvh - var(--navbar-h) - var(--footer-h) - 90px);
+            }
+
+            .materi-card .card-body {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .flashcard {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: .75rem;
+            cursor: pointer;
+            background: #fff;
+            transition: background .15s, box-shadow .15s;
+        }
+
+        .flashcard.active {
+            background: rgba(255, 63, 142, 0.04);
+            box-shadow: 0 0 0 1px rgba(255, 63, 142, 0.25);
+        }
+
+        .box {
+            fill: #fff;
+            stroke: #e5e7eb;
+            stroke-width: 2;
+            rx: 16;
+        }
+
+        .line {
+            stroke: var(--brand);
+            stroke-width: 3;
+        }
+
+        .text {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 18px;
+        }
+
+        /* Tombol outline-primary jadi pink */
+        .btn-outline-primary {
+            color: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .btn-outline-primary:hover,
+        .btn-outline-primary:focus {
+            background-color: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
+        }
+
+        .kontra-badge {
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .card-kontra {
+            border-left: 4px solid var(--brand);
+        }
+
+        .btn-outline-brand {
+            color: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .btn-outline-brand:hover {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .btn-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: .5rem;
+            margin-top: .4rem;
+        }
+
+        .dropzone {
+            min-height: 60px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light navbar-expand-lg fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+                <i class="bi bi-brush" style="font-size:1.25rem; color:var(--brand)"></i>
+                <strong>Pewarnaan Rambut</strong> <span class="fw-normal">• Single Application</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navs">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navs">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-semibold" style="color:var(--brand)"
+                            aria-current="page" href="videopengantar.html">Materi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../evaluasi.html">Latihan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../kd.html">Tujuan Pembelajaran</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../peta.html">Peta Konsep</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN: sidebar + konten -->
+    <main class="main-pad app-shell">
+        <div class="container-fluid">
+            <div class="row g-1 no-top-gap">
+                <!-- SIDEBAR -->
+                <aside class="col-12 col-md-auto order-1 order-md-0 p-0">
+                    <nav class="menu-card sidebar-fixed shadow-sm">
+                        <div class="menu-title"><i class="bi bi-journal-bookmark"></i> Single Application</div>
+                        <a class="menu-item" aria-current="page" href="videopengantar.html">
+                            <i class="bi bi-lightbulb">Video Pengantar</i>
+                        </a>
+                        <a class="menu-item" aria-current="page" href="SingleApplication.html">
+                            <i class="bi bi-lightbulb"></i> Overview Single Application
+                        </a>
+
+                        <!-- A. Pewarnaan Rambut Single -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-A" aria-expanded="true"
+                            aria-controls="submenu-A">
+                            <span class="me-2"><i class="bi bi-droplet-half"></i></span>
+                            <span class="flex-grow-1 text-start">A. Pewarnaan Rambut Single</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-A">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="PewarnaanSingleApplication.html">1. Pewarnaan Single
+                                        Application</a></li>
+                                <li><a class="menu-item py-1" href="CaraMemilihWarna.html">2. Cara Memilih Warna</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="MemilihWarnaCat.html">3. Memilih Warna Cat</a></li>
+                                <li><a class="menu-item py-1 active" href="KontraindikasiPewarnaan.html">4.
+                                        Kontraindikasi
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="HalYangDiperhatikan.html">5. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanA.html">6. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- B. Toning -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-B" aria-expanded="true"
+                            aria-controls="submenu-B">
+                            <span class="me-2"><i class="bi bi-palette"></i></span>
+                            <span class="flex-grow-1 text-start">B. Toning</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-B">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="HairToning.html">1. Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="CiriHairToning.html">2. Ciri Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="KeunggulanHairToning.html">3. Keunggulan Hair
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1" href="KosmetikHairToning.html">4. Kosmetik Hair Toning</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="ProsedurToning.html">5. Prosedur Melakukan
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1" href="HalDiperhatikanToning.html">6. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanB.html">7. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- C. Pewarnaan Uban -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-C" aria-expanded="true"
+                            aria-controls="submenu-C">
+                            <span class="me-2"><i class="bi bi-person-lines-fill"></i></span>
+                            <span class="flex-grow-1 text-start">C. Pewarnaan Uban</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-C">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="PewarnaanUban.html">1. Pewarnaan Uban</a></li>
+                                <li><a class="menu-item py-1" href="JenisPewarnaanUban.html">2. Jenis Pewarnaan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="TeknikPewarnaanUban.html">3. Teknik Pewarnaan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="UjiTempel.html">4. Uji Tempel</a></li>
+                                <li><a class="menu-item py-1" href="ProsedurKerjaUban.html">5. Prosedur Kerja</a></li>
+                                <li><a class="menu-item py-1" href="ReaksiAlergiUban.html">6. Reaksi Alergi</a></li>
+                                <li><a class="menu-item py-1" href="KesalahanPewarnaanUban.html">7. Kesalahan
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="AyoLakukanC.html">8. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Evaluasi -->
+                        <a class="menu-item" href="../evaluasi.html">
+                            <i class="bi bi-clipboard-check"></i> Evaluasi
+                        </a>
+                        <a class="menu-item" href="VideoPentup.html">
+                            <i class="bi bi-camera-video"></i> Evaluasi
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- KONTEN KANAN -->
+                <section class="col-12 col-md-9 col-xl-10 content-with-fixed order-2 order-md-0">
+                    <div class="card shadow-sm materi-card">
+                        <div class="card-header d-flex align-items-center gap-2">
+                            <i class="bi bi-lightbulb" style="color:var(--brand); font-size:1.25rem;"></i>
+                            <h3 class="h5 mb-0 fw-bold">Teknik Pewarnaan Rambut Aplikasi Tunggal (Single Application)
+                            </h3>
+                        </div>
+
+                        <div class="card-body" id="apersepsi-hair-coloring">
+
+                            <!-- MATERI + INTERAKTIF PER BAGIAN -->
+                            <section id="materi" class="mb-4">
+                                <div class="row g-3">
+
+                                    <!-- a. Alergi terhadap bahan pewarna -->
+                                    <div class="col-12 col-lg-12">
+                                        <div class="card card-kontra shadow-sm h-100">
+                                            <div class="card-body">
+                                                <div class="kontra-badge text-secondary mb-1">Kontraindikasi a</div>
+                                                <h2 class="h6">A. Alergi terhadap Bahan Pewarna Rambut</h2>
+                                                <p class="mb-2">
+                                                    Reaksi alergi dapat muncul pada sebagian orang terhadap bahan kimia
+                                                    dalam pewarna
+                                                    rambut,
+                                                    terutama <em>para-phenylenediamine (PPD)</em>. Sebelum pewarnaan
+                                                    sebaiknya dilakukan
+                                                    <strong>tes alergi di area kecil kulit (patch test) 48 jam</strong>
+                                                    sebelum prosedur.
+                                                </p>
+
+                                                <p class="small text-secondary mb-1">Pertanyaan interaktif:</p>
+                                                <p class="mb-1">Kapan sebaiknya tes alergi (patch test) dilakukan
+                                                    sebelum pewarnaan?</p>
+                                                <select id="qa" class="form-select form-select-sm w-auto">
+                                                    <option value="">-- pilih jawaban --</option>
+                                                    <option value="salah1">Segera sebelum pewarnaan (5–10 menit)
+                                                    </option>
+                                                    <option value="benar">Sekitar 48 jam sebelum pewarnaan</option>
+                                                    <option value="salah2">Tidak perlu tes alergi</option>
+                                                </select>
+                                                <div id="feedA" class="mt-2 small"></div>
+                                                <div class="btn-row">
+                                                    <button class="btn btn-outline-brand btn-sm"
+                                                        onclick="cekA()">Cek</button>
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                        onclick="resetA()">Reset</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- b. Kondisi kulit kepala tidak sehat -->
+                                    <div class="col-12 col-lg-12">
+                                        <div class="card card-kontra shadow-sm h-100">
+                                            <div class="card-body">
+                                                <div class="kontra-badge text-secondary mb-1">Kontraindikasi b</div>
+                                                <h2 class="h6">B. Kondisi Kulit Kepala yang Tidak Sehat</h2>
+                                                <p class="mb-2">
+                                                    Luka, iritasi, atau penyakit kulit kepala seperti <em>eksim,
+                                                        psoriasis, kurap</em> dan
+                                                    infeksi bakteri
+                                                    merupakan kontraindikasi. Pewarnaan dapat memperparah kondisi dan
+                                                    menimbulkan rasa
+                                                    perih.
+                                                </p>
+
+                                                <p class="small text-secondary mb-1">Tandai pernyataan yang benar:</p>
+                                                <div id="qb">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="b1">
+                                                        <label class="form-check-label" for="b1">
+                                                            Pewarnaan boleh dilakukan pada kulit kepala yang sedang
+                                                            lecet asalkan klien
+                                                            tidak merasa sakit.
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="b2">
+                                                        <label class="form-check-label" for="b2">
+                                                            Penyakit kulit kepala dapat menjadi alasan menunda pewarnaan
+                                                            sampai kondisi
+                                                            membaik.
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div id="feedB" class="mt-2 small"></div>
+                                                <div class="btn-row">
+                                                    <button class="btn btn-outline-brand btn-sm"
+                                                        onclick="cekB()">Cek</button>
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                        onclick="resetB()">Reset</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- c. Kehamilan & menyusui -->
+                                    <div class="col-12 col-lg-12">
+                                        <div class="card card-kontra shadow-sm h-100">
+                                            <div class="card-body">
+                                                <div class="kontra-badge text-secondary mb-1">Kontraindikasi c</div>
+                                                <h2 class="h6">C. Kehamilan dan Menyusui</h2>
+                                                <p class="mb-2">
+                                                    Selama trimester pertama kehamilan, beberapa wanita memilih
+                                                    menghindari pewarnaan karena
+                                                    bahan kimia
+                                                    dapat terserap melalui kulit. Ibu menyusui dengan risiko rendah
+                                                    tetap dianjurkan
+                                                    mengurangi
+                                                    paparan bahan kimia bila memungkinkan.
+                                                </p>
+
+                                                <p class="small text-secondary mb-1">Saran paling aman untuk klien hamil
+                                                    trimester pertama
+                                                    adalah …</p>
+                                                <select id="qc" class="form-select form-select-sm w-auto">
+                                                    <option value="">-- pilih jawaban --</option>
+                                                    <option value="salah1">Mewarnai rambut seperti biasa dengan pewarna
+                                                        permanen penuh.
+                                                    </option>
+                                                    <option value="benar">Menunda pewarnaan atau memilih teknik dengan
+                                                        paparan bahan kimia
+                                                        minimal.</option>
+                                                    <option value="salah2">Memakai pewarna lebih sering agar cepat
+                                                        terbiasa.</option>
+                                                </select>
+                                                <div id="feedC" class="mt-2 small"></div>
+                                                <div class="btn-row">
+                                                    <button class="btn btn-outline-brand btn-sm"
+                                                        onclick="cekC()">Cek</button>
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                        onclick="resetC()">Reset</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- d. Kondisi medis tertentu -->
+                                    <div class="col-12 col-lg-12">
+                                        <div class="card card-kontra shadow-sm h-100">
+                                            <div class="card-body">
+                                                <div class="kontra-badge text-secondary mb-1">Kontraindikasi d</div>
+                                                <h2 class="h6">D. Kondisi Medis Tertentu</h2>
+                                                <p class="mb-2">
+                                                    Bahan kimia pewarna rambut dapat memicu gejala pada orang dengan
+                                                    penyakit pernapasan
+                                                    (misalnya asma) atau sistem kekebalan tubuh yang lemah, sehingga
+                                                    lebih rentan terhadap
+                                                    infeksi
+                                                    ataupun reaksi alergi.
+                                                </p>
+
+                                                <p class="small text-secondary mb-1">Seret kondisi berikut ke kolom yang
+                                                    tepat:</p>
+                                                <div class="d-flex flex-wrap gap-2 mb-2" id="chipsMedis">
+                                                    <span id="chip1" class="badge bg-secondary p-2 draggable"
+                                                        draggable="true" data-val="hati">Asma berat</span>
+                                                    <span id="chip2" class="badge bg-secondary p-2 draggable"
+                                                        draggable="true" data-val="boleh">Klien sehat tanpa riwayat
+                                                        alergi</span>
+                                                    <span id="chip3" class="badge bg-secondary p-2 draggable"
+                                                        draggable="true" data-val="hati">Sistem imun sangat lemah</span>
+                                                </div>
+
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <div class="border rounded p-2 dropzone" data-type="boleh"
+                                                            id="zoneBoleh">
+                                                            <div class="small text-secondary">Boleh pewarnaan (dengan
+                                                                prosedur standar)
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="border rounded p-2 dropzone" data-type="hati"
+                                                            id="zoneHati">
+                                                            <div class="small text-secondary">Harus sangat hati-hati /
+                                                                tunda</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="feedD" class="mt-2 small"></div>
+                                                <div class="btn-row">
+                                                    <button class="btn btn-outline-brand btn-sm"
+                                                        onclick="cekD()">Cek</button>
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                        onclick="resetD()">Reset</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- e. Rambut rusak / kering -->
+                                    <div class="col-12 col-lg-12">
+                                        <div class="card card-kontra shadow-sm h-100">
+                                            <div class="card-body">
+                                                <div class="kontra-badge text-secondary mb-1">Kontraindikasi e</div>
+                                                <h2 class="h6">E. Rambut yang Rusak atau Kering</h2>
+                                                <p class="mb-2">
+                                                    Pewarnaan dapat memperburuk kondisi rambut yang sudah rusak atau
+                                                    sangat kering.
+                                                    Rambut sebaiknya diperbaiki dulu dengan perawatan intensif sebelum
+                                                    diberi warna.
+                                                </p>
+
+                                                <p class="small text-secondary mb-1">Lengkapi kalimat:</p>
+                                                <p class="mb-1">
+                                                    Sebelum mewarnai rambut yang sangat kering, hairdresser sebaiknya
+                                                    terlebih dahulu
+                                                    melakukan
+                                                    <input type="text" id="qe"
+                                                        class="form-control form-control-sm d-inline-block w-auto"
+                                                        placeholder="tuliskan 1–3 kata">
+                                                </p>
+                                                <div id="feedE" class="mt-2 small"></div>
+                                                <div class="btn-row">
+                                                    <button class="btn btn-outline-brand btn-sm"
+                                                        onclick="cekE()">Cek</button>
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                        onclick="resetE()">Reset</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- f. Penggunaan produk rambut lain -->
+                                    <div class="col-12 col-lg-12">
+                                        <div class="card card-kontra shadow-sm h-100">
+                                            <div class="card-body">
+                                                <div class="kontra-badge text-secondary mb-1">Kontraindikasi f</div>
+                                                <h2 class="h6">F. Penggunaan Produk Rambut Lainnya</h2>
+                                                <p class="mb-2">
+                                                    Produk seperti henna atau bahan kimia tertentu bisa <strong>tidak
+                                                        kompatibel</strong>
+                                                    dengan pewarna
+                                                    rambut. Campuran bahan yang tidak sesuai dapat menimbulkan reaksi
+                                                    yang tidak diinginkan
+                                                    pada warna maupun kesehatan rambut.
+                                                </p>
+
+                                                <p class="small text-secondary mb-1">Apa langkah paling aman jika klien
+                                                    pernah memakai
+                                                    henna?</p>
+                                                <select id="qf" class="form-select form-select-sm w-auto">
+                                                    <option value="">-- pilih jawaban --</option>
+                                                    <option value="salah1">Langsung bleaching dan pewarnaan permanen.
+                                                    </option>
+                                                    <option value="benar">Tanya riwayat pemakaian, lakukan uji kecil
+                                                        pada helai rambut, atau
+                                                        tunda bila ragu.</option>
+                                                    <option value="salah2">Abaikan riwayat henna, karena tidak
+                                                        berpengaruh.</option>
+                                                </select>
+                                                <div id="feedF" class="mt-2 small"></div>
+                                                <div class="btn-row">
+                                                    <button class="btn btn-outline-brand btn-sm"
+                                                        onclick="cekF()">Cek</button>
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                        onclick="resetF()">Reset</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
+                            <!-- LATIHAN CEPAT (REKAP) -->
+                            <section id="latihan-cepat" class="mb-4">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-body">
+                                        <h2 class="h5 mb-2">Latihan Cepat – Siap Melakukan Pewarnaan?</h2>
+                                        <p class="text-secondary small">Centang kondisi yang <strong>AMAN</strong> untuk
+                                            melakukan pewarnaan
+                                            single
+                                            application.</p>
+
+                                        <div id="rekap" class="mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="r1">
+                                                <label class="form-check-label" for="r1">Kulit kepala sehat, tanpa luka,
+                                                    tanpa penyakit
+                                                    kulit.</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="r2">
+                                                <label class="form-check-label" for="r2">Klien sedang mengalami reaksi
+                                                    alergi hebat setelah
+                                                    pewarnaan sebelumnya.</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="r3">
+                                                <label class="form-check-label" for="r3">Tidak ada riwayat asma berat
+                                                    atau gangguan
+                                                    pernapasan parah.</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="btn-row">
+                                            <button class="btn btn-outline-brand btn-sm" onclick="cekRekap()">Cek
+                                                Jawaban</button>
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                onclick="resetRekap()">Reset</button>
+                                        </div>
+                                        <div id="feedRekap" class="mt-2 small"></div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- REFLEKSI SINGKAT -->
+                            <section id="refleksi" class="mb-4">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-body">
+                                        <h2 class="h5 mb-2">Refleksi</h2>
+                                        <p class="text-secondary small">
+                                            Tuliskan dengan bahasamu sendiri: <br>
+                                            “Mengapa hairdresser harus memahami kontraindikasi sebelum melakukan
+                                            pewarnaan rambut?”
+                                        </p>
+                                        <textarea id="refleksiText" class="form-control mb-2" rows="3"
+                                            placeholder="Tulis jawabanmu di sini..."></textarea>
+                                        <div class="btn-row">
+                                            <button class="btn btn-outline-brand btn-sm" onclick="cekRefleksi()">Simpan
+                                                Refleksi
+                                                (Lokal)</button>
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                onclick="resetRefleksi()">Reset</button>
+                                        </div>
+                                        <div id="feedRefleksi" class="mt-2 small text-secondary"></div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <!-- TOMBOL NAVIGASI DI BAWAH KONTEN -->
+                    <div class="page-nav">
+                        <div class="page-nav-inner">
+                            <a class="btn btn-outline-secondary" href="MemilihWarnaCat.html">
+                                <i class="bi bi-arrow-left"></i> Sebelumnya
+                            </a>
+                            <a class="btn btn-brand" href="HalYangDiperhatikan.html">
+                                Berikutnya <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer fixed-bottom py-2">
+        <div class="container d-flex justify-content-between align-items-center small">
+            <span>SMKS ISFI BANJARMASIN • Hair Coloring</span>
+            <span class="text-muted">© 2025 • Single Application</span>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const LS_KEY = 'kontraindikasi_singleApp_state_v1';
+
+        // ==== SIMPAN & MUAT STATE KE LOCALSTORAGE ====
+        function saveState() {
+            if (typeof Storage === 'undefined') return;
+
+            const state = {
+                qa: document.getElementById('qa').value,
+                qb: {
+                    b1: document.getElementById('b1').checked,
+                    b2: document.getElementById('b2').checked
+                },
+                qc: document.getElementById('qc').value,
+                qd: { chipParents: {} },
+                qe: document.getElementById('qe').value,
+                qf: document.getElementById('qf').value,
+                rekap: {
+                    r1: document.getElementById('r1').checked,
+                    r2: document.getElementById('r2').checked,
+                    r3: document.getElementById('r3').checked
+                },
+                refleksi: document.getElementById('refleksiText').value,
+                feedback: {
+                    A: document.getElementById('feedA').innerHTML,
+                    B: document.getElementById('feedB').innerHTML,
+                    C: document.getElementById('feedC').innerHTML,
+                    D: document.getElementById('feedD').innerHTML,
+                    E: document.getElementById('feedE').innerHTML,
+                    F: document.getElementById('feedF').innerHTML,
+                    rekap: document.getElementById('feedRekap').innerHTML,
+                    refleksi: document.getElementById('feedRefleksi').innerHTML
+                }
+            };
+
+            ['chip1', 'chip2', 'chip3'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.parentElement) {
+                    const parent = el.parentElement;
+                    state.qd.chipParents[id] = parent.id || parent.dataset.type || 'chipsMedis';
+                }
+            });
+
+            localStorage.setItem(LS_KEY, JSON.stringify(state));
+        }
+
+        function loadState() {
+            if (typeof Storage === 'undefined') return;
+            const raw = localStorage.getItem(LS_KEY);
+            if (!raw) return;
+
+            let state;
+            try { state = JSON.parse(raw); } catch (e) { console.error(e); return; }
+            if (!state) return;
+
+            // A
+            document.getElementById('qa').value = state.qa || '';
+            if (state.feedback?.A) document.getElementById('feedA').innerHTML = state.feedback.A;
+
+            // B
+            if (state.qb) {
+                document.getElementById('b1').checked = !!state.qb.b1;
+                document.getElementById('b2').checked = !!state.qb.b2;
+            }
+            if (state.feedback?.B) document.getElementById('feedB').innerHTML = state.feedback.B;
+
+            // C
+            document.getElementById('qc').value = state.qc || '';
+            if (state.feedback?.C) document.getElementById('feedC').innerHTML = state.feedback.C;
+
+            // D: posisi chip
+            if (state.qd && state.qd.chipParents) {
+                Object.keys(state.qd.chipParents).forEach(id => {
+                    let parentKey = state.qd.chipParents[id];
+                    let parentEl = document.getElementById(parentKey);
+                    if (!parentEl) {
+                        parentEl = document.querySelector('.dropzone[data-type="' + parentKey + '"]');
+                    }
+                    if (!parentEl) parentEl = document.getElementById('chipsMedis');
+                    const chip = document.getElementById(id);
+                    if (chip && parentEl) parentEl.appendChild(chip);
+                });
+            }
+            if (state.feedback?.D) document.getElementById('feedD').innerHTML = state.feedback.D;
+
+            // E
+            document.getElementById('qe').value = state.qe || '';
+            if (state.feedback?.E) document.getElementById('feedE').innerHTML = state.feedback.E;
+
+            // F
+            document.getElementById('qf').value = state.qf || '';
+            if (state.feedback?.F) document.getElementById('feedF').innerHTML = state.feedback.F;
+
+            // Rekap
+            if (state.rekap) {
+                document.getElementById('r1').checked = !!state.rekap.r1;
+                document.getElementById('r2').checked = !!state.rekap.r2;
+                document.getElementById('r3').checked = !!state.rekap.r3;
+            }
+            if (state.feedback?.rekap) document.getElementById('feedRekap').innerHTML = state.feedback.rekap;
+
+            // Refleksi
+            document.getElementById('refleksiText').value = state.refleksi || '';
+            if (state.refleksi) {
+                document.getElementById('feedRefleksi').textContent =
+                    'Refleksi terakhirmu telah dimuat dari local storage. Kamu bisa mengeditnya kembali.';
+            } else if (state.feedback?.refleksi) {
+                document.getElementById('feedRefleksi').innerHTML = state.feedback.refleksi;
+            }
+        }
+
+        function resetAll() {
+            if (!confirm('Yakin ingin menghapus SEMUA jawaban yang tersimpan di perangkat ini?')) return;
+
+            // reset input/select
+            resetA();
+            resetB();
+            resetC();
+            resetD();
+            resetE();
+            resetF();
+            resetRekap();
+            resetRefleksi();
+
+            if (typeof Storage !== 'undefined') {
+                localStorage.removeItem(LS_KEY);
+            }
+        }
+
+        // ==== RESET PER BAGIAN ====
+        function resetA() {
+            document.getElementById('qa').value = '';
+            document.getElementById('feedA').innerHTML = '';
+            saveState();
+        }
+
+        function resetB() {
+            document.getElementById('b1').checked = false;
+            document.getElementById('b2').checked = false;
+            document.getElementById('feedB').innerHTML = '';
+            saveState();
+        }
+
+        function resetC() {
+            document.getElementById('qc').value = '';
+            document.getElementById('feedC').innerHTML = '';
+            saveState();
+        }
+
+        function resetD() {
+            const pool = document.getElementById('chipsMedis');
+            ['chip1', 'chip2', 'chip3'].forEach(id => {
+                const chip = document.getElementById(id);
+                if (chip && pool) pool.appendChild(chip);
+            });
+            document.getElementById('feedD').innerHTML = '';
+            document.querySelectorAll('.dropzone').forEach(z => z.classList.remove('bg-light'));
+            saveState();
+        }
+
+        function resetE() {
+            document.getElementById('qe').value = '';
+            document.getElementById('feedE').innerHTML = '';
+            saveState();
+        }
+
+        function resetF() {
+            document.getElementById('qf').value = '';
+            document.getElementById('feedF').innerHTML = '';
+            saveState();
+        }
+
+        function resetRekap() {
+            document.getElementById('r1').checked = false;
+            document.getElementById('r2').checked = false;
+            document.getElementById('r3').checked = false;
+            document.getElementById('feedRekap').innerHTML = '';
+            saveState();
+        }
+
+        function resetRefleksi() {
+            document.getElementById('refleksiText').value = '';
+            document.getElementById('feedRefleksi').innerHTML = '';
+            saveState();
+        }
+
+        // ==== LATIHAN PER BAGIAN ====
+        function cekA() {
+            const v = document.getElementById('qa').value;
+            const box = document.getElementById('feedA');
+            if (!v) { box.textContent = 'Pilih dulu salah satu jawaban.'; saveState(); return; }
+            box.innerHTML = v === 'benar'
+                ? '<span class="text-success">✅ Benar. Patch test dilakukan ±48 jam sebelum pewarnaan.</span>'
+                : '<span class="text-danger">❌ Belum tepat. Patch test idealnya dilakukan sekitar 48 jam sebelum pewarnaan.</span>';
+            saveState();
+        }
+
+        function cekB() {
+            const b1 = document.getElementById('b1').checked;
+            const b2 = document.getElementById('b2').checked;
+            const box = document.getElementById('feedB');
+            if (!b1 && !b2) { box.textContent = 'Pilih minimal satu pernyataan.'; saveState(); return; }
+            if (!b1 && b2) {
+                box.innerHTML = '<span class="text-success">✅ Tepat. Kulit kepala yang sakit sebaiknya membuat pewarnaan ditunda.</span>';
+            } else {
+                box.innerHTML = '<span class="text-danger">❌ Masih kurang tepat. Pewarnaan TIDAK boleh pada kulit kepala yang lecet atau sakit.</span>';
+            }
+            saveState();
+        }
+
+        function cekC() {
+            const v = document.getElementById('qc').value;
+            const box = document.getElementById('feedC');
+            if (!v) { box.textContent = 'Pilih dulu salah satu jawaban.'; saveState(); return; }
+            box.innerHTML = v === 'benar'
+                ? '<span class="text-success">✅ Benar. Keamanan ibu dan janin lebih diutamakan.</span>'
+                : '<span class="text-danger">❌ Belum tepat. Untuk trimester pertama, sebaiknya menunda atau meminimalkan paparan bahan kimia.</span>';
+            saveState();
+        }
+
+        // Drag & drop kecil utk bagian D (memindahkan chip)
+        function setupDrag() {
+            document.querySelectorAll('.draggable').forEach(chip => {
+                chip.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('chipId', chip.id);
+                });
+            });
+
+            document.querySelectorAll('.dropzone, #chipsMedis').forEach(zone => {
+                zone.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    zone.classList.add('bg-light');
+                });
+                zone.addEventListener('dragleave', () => zone.classList.remove('bg-light'));
+                zone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    zone.classList.remove('bg-light');
+                    const id = e.dataTransfer.getData('chipId');
+                    const chip = document.getElementById(id);
+                    if (chip) zone.appendChild(chip);
+                    saveState();
+                });
+            });
+        }
+
+        function cekD() {
+            const zones = document.querySelectorAll('.dropzone');
+            let benar = true;
+            zones.forEach(z => {
+                const type = z.dataset.type;
+                const chips = z.querySelectorAll('.draggable');
+                chips.forEach(c => {
+                    if (c.dataset.val !== type) benar = false;
+                });
+            });
+            const box = document.getElementById('feedD');
+            if (benar) {
+                box.innerHTML = '<span class="text-success">✅ Betul. Klien dengan asma berat atau imun lemah harus sangat hati-hati atau menunda pewarnaan.</span>';
+            } else {
+                box.innerHTML = '<span class="text-danger">❌ Coba lagi. Kondisi seperti asma berat dan imun lemah seharusnya berada di kolom “hati-hati / tunda”.</span>';
+            }
+            saveState();
+        }
+
+        function cekE() {
+            const v = (document.getElementById('qe').value || '').toLowerCase();
+            const box = document.getElementById('feedE');
+            if (!v) { box.textContent = 'Lengkapi dulu kalimatnya.'; saveState(); return; }
+            if (v.includes('perawatan') || v.includes('treatment') || v.includes('merawat') || v.includes('perbaikan')) {
+                box.innerHTML = '<span class="text-success">✅ Tepat. Rambut perlu perawatan/perbaikan dulu sebelum diwarnai.</span>';
+            } else {
+                box.innerHTML = '<span class="text-warning">ℹ️ Ide sudah ada, tapi sebutkan bahwa rambut perlu <strong>perawatan/perbaikan</strong> dulu sebelum pewarnaan.</span>';
+            }
+            saveState();
+        }
+
+        function cekF() {
+            const v = document.getElementById('qf').value;
+            const box = document.getElementById('feedF');
+            if (!v) { box.textContent = 'Pilih dulu salah satu jawaban.'; saveState(); return; }
+            box.innerHTML = v === 'benar'
+                ? '<span class="text-success">✅ Benar. Riwayat henna harus digali dan diuji dulu sebelum pewarnaan.</span>'
+                : '<span class="text-danger">❌ Belum tepat. Riwayat henna tidak boleh diabaikan.</span>';
+            saveState();
+        }
+
+        // Rekap akhir
+        function cekRekap() {
+            const r1 = document.getElementById('r1').checked;
+            const r2 = document.getElementById('r2').checked;
+            const r3 = document.getElementById('r3').checked;
+            const box = document.getElementById('feedRekap');
+            if (!r1 && !r2 && !r3) { box.textContent = 'Centang dulu kondisi yang menurutmu aman.'; saveState(); return; }
+            if (r1 && !r2 && r3) {
+                box.innerHTML = '<span class="text-success">✅ Tepat. Kondisi 1 dan 3 aman, sedangkan kondisi 2 justru kontraindikasi.</span>';
+            } else {
+                box.innerHTML = '<span class="text-danger">❌ Coba lagi. Kondisi dengan reaksi alergi hebat <strong>tidak aman</strong> untuk pewarnaan.</span>';
+            }
+            saveState();
+        }
+
+        // Refleksi disimpan lokal
+        function cekRefleksi() {
+            const txt = document.getElementById('refleksiText').value.trim();
+            const box = document.getElementById('feedRefleksi');
+            if (!txt) {
+                box.textContent = 'Tulis dulu refleksimu, minimal 1 kalimat.';
+                saveState();
+                return;
+            }
+            box.textContent = 'Refleksimu tersimpan di perangkat ini (local storage).';
+            saveState();
+        }
+
+        // load state & pasang event
+        window.addEventListener('DOMContentLoaded', () => {
+            setupDrag();
+            loadState();
+
+            // simpan otomatis saat input berubah
+            ['qa', 'qc', 'qf', 'qe', 'r1', 'r2', 'r3'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', saveState);
+            });
+            const ref = document.getElementById('refleksiText');
+            if (ref) ref.addEventListener('blur', saveState);
+        });
+    </script>
+</body>
+
+</html>

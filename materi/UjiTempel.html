@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Apersepsi • Single Application</title>
+
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --navbar-h: 55px;
+            --footer-h: 40px;
+            --brand: #ff3f8e;
+            --sidebar-w: 255px;
+            --sidebar-gap: 8px;
+            --line: #e5e7eb;
+            --pt-pink: #ff3f8e;
+            --pt-gray: #e5e7eb;
+            --pt-gray-text: #6b7280;
+            --pt-white: #ffffff;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            padding-bottom: var(--footer-h);
+            background: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .main-pad {
+            padding-top: var(--navbar-h);
+        }
+
+        main.app-shell {
+            min-height: calc(100vh - var(--navbar-h) - var(--footer-h));
+        }
+
+        .navbar,
+        .footer {
+            background: #fff;
+        }
+
+        .footer {
+            border-top: 1px solid #eee;
+        }
+
+        .menu-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+        }
+
+        .menu-title {
+            padding: .75rem 1rem;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            display: block;
+            padding: .6rem 1rem;
+            color: inherit;
+            text-decoration: none;
+            font-size: .95rem;
+        }
+
+        .menu-item:hover {
+            background: #fafafa;
+        }
+
+        .menu-item.active {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+
+        .no-top-gap>aside,
+        .no-top-gap>section {
+            padding-top: 0 !important;
+        }
+
+        .btn-brand {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .btn-brand:hover {
+            color: #fff;
+            filter: brightness(.95);
+        }
+
+        .materi-card .card-header {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: .5rem 1rem;
+        }
+
+        .page-nav {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-nav-inner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Mobile: sidebar ikut alur */
+        @media (max-width: 767.98px) {
+            .sidebar-fixed {
+                position: static;
+                width: 100%;
+            }
+        }
+
+        /* Desktop: sidebar fixed kiri, konten bergeser & card dipendekkan */
+        @media (min-width: 768px) {
+            .sidebar-fixed {
+                position: fixed;
+                top: var(--navbar-h);
+                left: 0;
+                width: var(--sidebar-w);
+                height: calc(100dvh - var(--navbar-h));
+                overflow-y: auto;
+            }
+
+            .content-with-fixed {
+                margin-left: calc(var(--sidebar-w) + var(--sidebar-gap));
+            }
+
+            .materi-card {
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100dvh - var(--navbar-h) - var(--footer-h) - 90px);
+            }
+
+            .materi-card .card-body {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .flashcard {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: .75rem;
+            cursor: pointer;
+            background: #fff;
+            transition: background .15s, box-shadow .15s;
+        }
+
+        .flashcard.active {
+            background: rgba(255, 63, 142, 0.04);
+            box-shadow: 0 0 0 1px rgba(255, 63, 142, 0.25);
+        }
+
+        .box {
+            fill: #fff;
+            stroke: #e5e7eb;
+            stroke-width: 2;
+            rx: 16;
+        }
+
+        .line {
+            stroke: var(--brand);
+            stroke-width: 3;
+        }
+
+        .text {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 18px;
+        }
+
+        .pt-section {
+            background: var(--pt-white);
+            border-radius: 16px;
+            border: 1px solid var(--pt-gray);
+            padding: 1.25rem;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
+            margin-bottom: 1.5rem;
+        }
+
+        .pt-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--pt-pink);
+            margin-bottom: .35rem;
+        }
+
+        .pt-subtitle {
+            font-size: .9rem;
+            color: var(--pt-gray-text);
+            margin-bottom: .6rem;
+        }
+
+        .pt-softbox {
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid var(--pt-gray);
+            padding: .75rem;
+            font-size: .88rem;
+        }
+
+        .pt-label {
+            font-size: .85rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: .25rem;
+        }
+
+        .pt-list {
+            font-size: .9rem;
+            margin-bottom: .4rem;
+        }
+
+        .pt-select,
+        .pt-textarea {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--pt-gray);
+            padding: .35rem .6rem;
+            font-size: .85rem;
+            margin-bottom: .4rem;
+        }
+
+        .pt-textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        .pt-btn {
+            border-radius: 999px;
+            border: 1px solid var(--pt-pink);
+            color: var(--pt-pink);
+            background: var(--pt-white);
+            padding: .3rem .9rem;
+            font-size: .8rem;
+            margin-top: .25rem;
+            margin-right: .3rem;
+            cursor: pointer;
+        }
+
+        .pt-btn.primary {
+            background: var(--pt-pink);
+            color: #fff;
+        }
+
+        .pt-btn:hover {
+            filter: brightness(.97);
+        }
+
+        .pt-feedback {
+            font-size: .8rem;
+            margin-top: .3rem;
+        }
+
+        .pt-sim-box {
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid var(--pt-gray);
+            padding: .75rem;
+            font-size: .85rem;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light navbar-expand-lg fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+                <i class="bi bi-brush" style="font-size:1.25rem; color:var(--brand)"></i>
+                <strong>Pewarnaan Rambut</strong> <span class="fw-normal">• Single Application</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navs">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navs">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-semibold" style="color:var(--brand)"
+                            aria-current="page" href="videopengantar.html">Materi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../latihan.html">Latihan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../kd.html">Tujuan Pembelajaran</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../peta.html">Peta Konsep</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN: sidebar + konten -->
+    <main class="main-pad app-shell">
+        <div class="container-fluid">
+            <div class="row g-1 no-top-gap">
+                <!-- SIDEBAR -->
+                <aside class="col-12 col-md-auto order-1 order-md-0 p-0">
+                    <nav class="menu-card sidebar-fixed shadow-sm">
+                        <div class="menu-title"><i class="bi bi-journal-bookmark"></i> Single Application</div>
+                        <a class="menu-item " aria-current="page" href="videopengantar.html">
+                            <i class="bi bi-lightbulb">Video Pengantar</i>
+                        </a>
+                        <a class="menu-item" aria-current="page" href="SingleApplication.html">
+                            <i class="bi bi-lightbulb"></i> Overview Single Application
+                        </a>
+
+                        <!-- A. Pewarnaan Rambut Single -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-A" aria-expanded="true"
+                            aria-controls="submenu-A">
+                            <span class="me-2"><i class="bi bi-droplet-half"></i></span>
+                            <span class="flex-grow-1 text-start">A. Pewarnaan Rambut Single</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-A">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="PewarnaanSingleApplication.html">1. Pewarnaan Single
+                                        Application</a></li>
+                                <li><a class="menu-item py-1" href="CaraMemilihWarna.html">2. Cara Memilih Warna</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="MemilihWarnaCat.html">3. Memilih Warna Cat</a></li>
+                                <li><a class="menu-item py-1" href="KontraindikasiPewarnaan.html">4. Kontraindikasi
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="HalYangDiperhatikan.html">5. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanA.html">6. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- B. Toning -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-B" aria-expanded="true"
+                            aria-controls="submenu-B">
+                            <span class="me-2"><i class="bi bi-palette"></i></span>
+                            <span class="flex-grow-1 text-start">B. Toning</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-B">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="HairToning.html">1. Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="CiriHairToning.html">2. Ciri Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="KeunggulanHairToning.html">3. Keunggulan Hair
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1" href="KosmetikHairToning.html">4. Kosmetik Hair Toning</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="ProsedurToning.html">5. Prosedur Melakukan
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1" href="HalDiperhatikanToning.html">6. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanB.html">7. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- C. Pewarnaan Uban -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-C" aria-expanded="true"
+                            aria-controls="submenu-C">
+                            <span class="me-2"><i class="bi bi-person-lines-fill"></i></span>
+                            <span class="flex-grow-1 text-start">C. Pewarnaan Uban</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-C">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="PewarnaanUban.html">1. Pewarnaan Uban</a></li>
+                                <li><a class="menu-item py-1" href="JenisPewarnaanUban.html">2. Jenis Pewarnaan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="TeknikPewarnaanUban.html">3. Teknik Pewarnaan</a>
+                                </li>
+                                <li><a class="menu-item py-1 active" href="UjiTempel.html">4. Uji Tempel</a></li>
+                                <li><a class="menu-item py-1" href="ProsedurKerjaUban.html">5. Prosedur Kerja</a></li>
+                                <li><a class="menu-item py-1" href="ReaksiAlergiUban.html">6. Reaksi Alergi</a></li>
+                                <li><a class="menu-item py-1" href="KesalahanPewarnaanUban.html">7. Kesalahan
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="AyoLakukanC.html">8. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Evaluasi -->
+                        <a class="menu-item" href="../evaluasi.html">
+                            <i class="bi bi-clipboard-check"></i> Evaluasi
+                        </a>
+                        <a class="menu-item" href="VideoPentup.html">
+                            <i class="bi bi-camera-video"></i> Evaluasi
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- KONTEN KANAN -->
+                <section class="col-12 col-md-9 col-xl-10 content-with-fixed order-2 order-md-0">
+                    <div class="card shadow-sm materi-card">
+                        <div class="card-header d-flex align-items-center gap-2">
+                            <i class="bi bi-lightbulb" style="color:var(--brand); font-size:1.25rem;"></i>
+                            <h3 class="h5 mb-0 fw-bold">Video Pengantar
+                        </div>
+
+                        <div class="card-body" id="apersepsi-hair-coloring">
+                            <div class="pt-title">Uji Tempel Sebelum Melakukan Pewarnaan Rambut</div>
+                            <div class="pt-subtitle">
+                                Uji tempel (patch test) dilakukan untuk memastikan pelanggan tidak mengalami
+                                reaksi alergi terhadap produk pewarna tertentu sebelum pewarna diaplikasikan ke
+                                seluruh rambut.
+                            </div>
+
+                            <!-- Penjelasan materi: a. Persiapan, b. Mengaplikasikan Pewarna, c. Pantau Reaksi -->
+                            <div class="pt-softbox mb-3">
+                                <ol class="pt-list">
+                                    <li>
+                                        <strong>a. Persiapan</strong>
+                                        <ol type="1" class="pt-list">
+                                            <li>Pilih area kulit kecil (belakang telinga atau pergelangan tangan)
+                                                sebagai tempat uji.</li>
+                                            <li>Bersihkan area tersebut dengan air dan keringkan.</li>
+                                        </ol>
+                                    </li>
+                                    <li>
+                                        <strong>b. Mengaplikasikan Pewarna</strong>
+                                        <ol type="1" class="pt-list">
+                                            <li>Campurkan sedikit pewarna rambut dengan developer sesuai petunjuk
+                                                kemasan.</li>
+                                            <li>Oleskan tipis pada area yang sudah disiapkan.</li>
+                                            <li>Biarkan selama ±48 jam tanpa dicuci atau digosok.</li>
+                                        </ol>
+                                    </li>
+                                    <li>
+                                        <strong>c. Pantau Reaksi</strong>
+                                        <ol type="1" class="pt-list">
+                                            <li>Amati apakah muncul kemerahan, gatal, bengkak, atau ruam.</li>
+                                            <li>Jika tidak ada reaksi negatif, pewarna rambut aman digunakan pada rambut
+                                                pelanggan.</li>
+                                        </ol>
+                                    </li>
+                                </ol>
+                            </div>
+
+                            <!-- ========== INTERAKTIF 1: URUTKAN LANGKAH ========== -->
+                            <div class="pt-softbox mb-3" id="pt-order">
+                                <div class="pt-label">Latihan 1 – Urutkan Langkah Uji Tempel</div>
+                                <p class="mb-2" style="font-size:.85rem;color:var(--pt-gray-text);">
+                                    Pilih urutan yang benar (1–4) untuk setiap langkah di bawah.
+                                </p>
+
+                                <div class="mb-2">
+                                    <span class="d-block mb-1">A. Mengoleskan campuran pewarna pada area kecil
+                                        kulit.</span>
+                                    <select id="pt-o1" class="pt-select">
+                                        <option value="">– pilih urutan –</option>
+                                        <option value="1">Langkah 1</option>
+                                        <option value="2">Langkah 2</option>
+                                        <option value="3">Langkah 3</option>
+                                        <option value="4">Langkah 4</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="d-block mb-1">B. Membersihkan area uji dan mengeringkannya.</span>
+                                    <select id="pt-o2" class="pt-select">
+                                        <option value="">– pilih urutan –</option>
+                                        <option value="1">Langkah 1</option>
+                                        <option value="2">Langkah 2</option>
+                                        <option value="3">Langkah 3</option>
+                                        <option value="4">Langkah 4</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="d-block mb-1">C. Mengamati reaksi sampai 48 jam.</span>
+                                    <select id="pt-o3" class="pt-select">
+                                        <option value="">– pilih urutan –</option>
+                                        <option value="1">Langkah 1</option>
+                                        <option value="2">Langkah 2</option>
+                                        <option value="3">Langkah 3</option>
+                                        <option value="4">Langkah 4</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="d-block mb-1">D. Memilih area kecil di belakang telinga atau
+                                        pergelangan tangan.</span>
+                                    <select id="pt-o4" class="pt-select">
+                                        <option value="">– pilih urutan –</option>
+                                        <option value="1">Langkah 1</option>
+                                        <option value="2">Langkah 2</option>
+                                        <option value="3">Langkah 3</option>
+                                        <option value="4">Langkah 4</option>
+                                    </select>
+                                </div>
+
+                                <button class="pt-btn primary" onclick="ptCheckOrder()">Cek Jawaban</button>
+                                <button class="pt-btn" onclick="ptSaveOrder()">Simpan</button>
+                                <button class="pt-btn" onclick="ptResetOrder()">Reset</button>
+                                <div id="pt-order-feedback" class="pt-feedback"></div>
+                            </div>
+
+                            <!-- ========== INTERAKTIF 2: SKENARIO YA / TIDAK ========== -->
+                            <div class="pt-softbox mb-3" id="pt-skenario">
+                                <div class="pt-label">Latihan 2 – Apakah Ini Uji Tempel yang Benar?</div>
+                                <p class="mb-2" style="font-size:.85rem;color:var(--pt-gray-text);">
+                                    Tentukan apakah tindakan di bawah ini <strong>benar (Ya)</strong> atau
+                                    <strong>tidak tepat (Tidak)</strong> dalam uji tempel.
+                                </p>
+
+                                <div class="mb-2">
+                                    <span class="d-block mb-1">1) Mencuci area uji setelah 10 menit karena terasa
+                                        sedikit lengket.</span>
+                                    <select id="pt-s1" class="pt-select">
+                                        <option value="">-- pilih --</option>
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-2">
+                                    <span class="d-block mb-1">2) Membiarkan area uji tetap kering dan tidak digosok
+                                        selama 48 jam.</span>
+                                    <select id="pt-s2" class="pt-select">
+                                        <option value="">-- pilih --</option>
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-2">
+                                    <span class="d-block mb-1">3) Menggunakan area uji yang sama berulang-ulang walaupun
+                                        pernah muncul ruam.</span>
+                                    <select id="pt-s3" class="pt-select">
+                                        <option value="">-- pilih --</option>
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+
+                                <button class="pt-btn primary" onclick="ptCheckScenario()">Cek Jawaban</button>
+                                <button class="pt-btn" onclick="ptSaveScenario()">Simpan</button>
+                                <button class="pt-btn" onclick="ptResetScenario()">Reset</button>
+                                <div id="pt-skenario-feedback" class="pt-feedback"></div>
+                            </div>
+
+                            <!-- ========== INTERAKTIF 3: SIMULASI UJI TEMPEL ========== -->
+                            <div class="pt-softbox" id="pt-sim">
+                                <div class="pt-label">Latihan 3 – Simulasi Hasil Uji Tempel</div>
+                                <p class="mb-2" style="font-size:.85rem;color:var(--pt-gray-text);">
+                                    Pilih kondisi pelanggan dan hasil pengamatan, lalu lihat keputusan yang harus
+                                    diambil.
+                                </p>
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-4">
+                                        <label class="pt-label" for="pt-area">Lokasi uji</label>
+                                        <select id="pt-area" class="pt-select">
+                                            <option value="telinga">Belakang telinga</option>
+                                            <option value="pergelangan">Pergelangan tangan</option>
+                                            <option value="lain">Area kulit lain</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="pt-label" for="pt-riwayat">Riwayat alergi</label>
+                                        <select id="pt-riwayat" class="pt-select">
+                                            <option value="tidak">Tidak diketahui / belum pernah</option>
+                                            <option value="pernah">Pernah alergi produk kosmetik</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="pt-label" for="pt-hasil">Hasil setelah 48 jam</label>
+                                        <select id="pt-hasil" class="pt-select">
+                                            <option value="negatif">Tidak ada reaksi</option>
+                                            <option value="ringan">Gatal ringan / sedikit kemerahan</option>
+                                            <option value="berat">Ruam, bengkak, atau melepuh</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div id="pt-sim-result" class="pt-sim-box mb-2">
+                                    Atur pilihan di atas lalu klik <strong>Jalankan Simulasi</strong> untuk melihat
+                                    keputusan menggunakan pewarna.
+                                </div>
+
+                                <button class="pt-btn primary" onclick="ptRunSim()">Jalankan Simulasi</button>
+                                <button class="pt-btn" onclick="ptSaveSim()">Simpan</button>
+                                <button class="pt-btn" onclick="ptResetSim()">Reset</button>
+                                <div id="pt-sim-feedback" class="pt-feedback"></div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- TOMBOL NAVIGASI DI BAWAH KONTEN -->
+                    <div class="page-nav">
+                        <div class="page-nav-inner">
+                            <a class="btn btn-outline-secondary" href="TeknikPewarnaanUban.html">
+                                <i class="bi bi-arrow-left"></i> Sebelumnya
+                            </a>
+                            <a class="btn btn-brand" href="ProsedurKerjaUban.html">
+                                Berikutnya <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer fixed-bottom py-2">
+        <div class="container d-flex justify-content-between align-items-center small">
+            <span>SMKS ISFI BANJARMASIN • Hair Coloring</span>
+            <span class="text-muted">© 2025 • Single Application</span>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const PT_LS_KEY = 'uji_tempel_v1';
+
+        function ptLoadState() {
+            try {
+                const raw = localStorage.getItem(PT_LS_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                console.warn('Gagal membaca localStorage', e);
+                return {};
+            }
+        }
+
+        function ptSaveState(partial) {
+            try {
+                const current = ptLoadState();
+                const next = Object.assign({}, current, partial);
+                localStorage.setItem(PT_LS_KEY, JSON.stringify(next));
+            } catch (e) {
+                console.warn('Gagal menyimpan localStorage', e);
+            }
+        }
+
+        /* ====== ORDER ====== */
+        function ptCheckOrder() {
+            const o1 = document.getElementById('pt-o1').value;
+            const o2 = document.getElementById('pt-o2').value;
+            const o3 = document.getElementById('pt-o3').value;
+            const o4 = document.getElementById('pt-o4').value;
+            const fb = document.getElementById('pt-order-feedback');
+
+            if (!o1 || !o2 || !o3 || !o4) {
+                fb.textContent = 'Lengkapi dulu semua urutan.';
+                fb.style.color = '#111827';
+                return;
+            }
+
+            // Urutan benar: D(1) -> B(2) -> A(3) -> C(4)
+            let skor = 0;
+            if (o4 === '1') skor++;
+            if (o2 === '2') skor++;
+            if (o1 === '3') skor++;
+            if (o3 === '4') skor++;
+
+            if (skor === 4) {
+                fb.textContent = '✅ Tepat! Urutan uji tempel kamu sudah benar.';
+                fb.style.color = '#16a34a';
+            } else {
+                fb.textContent = '⚠️ Masih ada yang salah. Ingat: pilih area → bersihkan → oles campuran → pantau reaksi 48 jam.';
+                fb.style.color = '#dc2626';
+            }
+        }
+
+        function ptSaveOrder() {
+            const data = {
+                o1: document.getElementById('pt-o1').value,
+                o2: document.getElementById('pt-o2').value,
+                o3: document.getElementById('pt-o3').value,
+                o4: document.getElementById('pt-o4').value,
+                fb: document.getElementById('pt-order-feedback').textContent
+            };
+            ptSaveState({ order: data });
+            const fb = document.getElementById('pt-order-feedback');
+            fb.textContent = '💾 Jawaban urutan tersimpan.';
+            fb.style.color = '#111827';
+        }
+
+        function ptResetOrder() {
+            if (!confirm('Yakin reset Latihan Urutan?')) return;
+            ['pt-o1', 'pt-o2', 'pt-o3', 'pt-o4'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('pt-order-feedback').textContent = '';
+            const st = ptLoadState(); st.order = undefined; ptSaveState(st);
+        }
+
+        /* ====== SKENARIO ====== */
+        function ptCheckScenario() {
+            const s1 = document.getElementById('pt-s1').value;
+            const s2 = document.getElementById('pt-s2').value;
+            const s3 = document.getElementById('pt-s3').value;
+            const fb = document.getElementById('pt-skenario-feedback');
+
+            if (!s1 || !s2 || !s3) {
+                fb.textContent = 'Isi dulu semua pilihan.';
+                fb.style.color = '#111827';
+                return;
+            }
+
+            let skor = 0;
+            if (s1 === 'tidak') skor++;
+            if (s2 === 'ya') skor++;
+            if (s3 === 'tidak') skor++;
+
+            if (skor === 3) {
+                fb.textContent = '✅ Benar! Kamu sudah memahami prinsip uji tempel yang aman.';
+                fb.style.color = '#16a34a';
+            } else {
+                fb.textContent = '⚠️ Skor kamu ' + skor + '/3. Ingat: area uji tidak boleh dicuci terlalu cepat dan jangan dipakai jika pernah timbul ruam.';
+                fb.style.color = '#dc2626';
+            }
+        }
+
+        function ptSaveScenario() {
+            const data = {
+                s1: document.getElementById('pt-s1').value,
+                s2: document.getElementById('pt-s2').value,
+                s3: document.getElementById('pt-s3').value,
+                fb: document.getElementById('pt-skenario-feedback').textContent
+            };
+            ptSaveState({ scenario: data });
+            const fb = document.getElementById('pt-skenario-feedback');
+            fb.textContent = '💾 Jawaban skenario tersimpan.';
+            fb.style.color = '#111827';
+        }
+
+        function ptResetScenario() {
+            if (!confirm('Yakin reset Latihan Skenario?')) return;
+            ['pt-s1', 'pt-s2', 'pt-s3'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('pt-skenario-feedback').textContent = '';
+            const st = ptLoadState(); st.scenario = undefined; ptSaveState(st);
+        }
+
+        /* ====== SIMULASI ====== */
+        function ptBuildSimText(area, riwayat, hasil) {
+            let t = 'Hasil simulasi uji tempel:\n\n';
+
+            t += '• Lokasi uji: ' + (
+                area === 'telinga' ? 'belakang telinga' :
+                    area === 'pergelangan' ? 'pergelangan tangan' :
+                        'area kulit lain'
+            ) + '.\n';
+
+            if (riwayat === 'pernah') {
+                t += '• Pelanggan memiliki riwayat alergi terhadap produk kosmetik.\n';
+                t += '  → Hairdresser harus ekstra hati-hati dan mencatat jenis produk yang digunakan.\n\n';
+            } else {
+                t += '• Riwayat alergi sebelumnya tidak jelas.\n\n';
+            }
+
+            if (hasil === 'negatif') {
+                t += '• Setelah 48 jam <strong>tidak ada reaksi</strong>.\n';
+                t += '  → Pewarna dapat digunakan pada seluruh rambut, namun tetap awasi reaksi selama proses pewarnaan.\n';
+            } else if (hasil === 'ringan') {
+                t += '• Setelah 48 jam muncul gatal ringan / sedikit kemerahan.\n';
+                t += '  → Sebaiknya <strong>tidak melanjutkan</strong> dengan produk yang sama.\n';
+                t += '  → Sarankan pelanggan berkonsultasi ke dokter jika keluhan menetap.\n';
+            } else {
+                t += '• Terjadi ruam, bengkak, atau melepuh.\n';
+                t += '  → Produk pewarna <strong>tidak boleh digunakan</strong> pada pelanggan ini.\n';
+                t += '  → Hentikan pemakaian, bersihkan area, dan segera rujuk ke tenaga kesehatan.\n';
+            }
+
+            t += '\nCatatan: hasil uji tempel harus dicatat di kartu pelanggan sebagai referensi kunjungan berikutnya.';
+            return t;
+        }
+
+        function ptRunSim() {
+            const area = document.getElementById('pt-area').value;
+            const riwayat = document.getElementById('pt-riwayat').value;
+            const hasil = document.getElementById('pt-hasil').value;
+            const box = document.getElementById('pt-sim-result');
+            box.innerHTML = ptBuildSimText(area, riwayat, hasil);
+            document.getElementById('pt-sim-feedback').textContent = '';
+        }
+
+        function ptSaveSim() {
+            const state = {
+                area: document.getElementById('pt-area').value,
+                riwayat: document.getElementById('pt-riwayat').value,
+                hasil: document.getElementById('pt-hasil').value,
+                result: document.getElementById('pt-sim-result').innerHTML
+            };
+            ptSaveState({ sim: state });
+            const fb = document.getElementById('pt-sim-feedback');
+            fb.textContent = '💾 Hasil simulasi tersimpan.';
+            fb.style.color = '#111827';
+        }
+
+        function ptResetSim() {
+            if (!confirm('Yakin reset Simulasi Uji Tempel?')) return;
+            document.getElementById('pt-area').value = 'telinga';
+            document.getElementById('pt-riwayat').value = 'tidak';
+            document.getElementById('pt-hasil').value = 'negatif';
+            document.getElementById('pt-sim-result').textContent =
+                'Atur pilihan di atas lalu klik Jalankan Simulasi untuk melihat keputusan menggunakan pewarna.';
+            document.getElementById('pt-sim-feedback').textContent = '';
+            const st = ptLoadState(); st.sim = undefined; ptSaveState(st);
+        }
+
+        /* ====== RESTORE SAAT HALAMAN DIBUKA ====== */
+        document.addEventListener('DOMContentLoaded', () => {
+            const st = ptLoadState();
+
+            if (st.order) {
+                document.getElementById('pt-o1').value = st.order.o1 || '';
+                document.getElementById('pt-o2').value = st.order.o2 || '';
+                document.getElementById('pt-o3').value = st.order.o3 || '';
+                document.getElementById('pt-o4').value = st.order.o4 || '';
+                if (st.order.fb) {
+                    document.getElementById('pt-order-feedback').textContent = st.order.fb;
+                }
+            }
+
+            if (st.scenario) {
+                document.getElementById('pt-s1').value = st.scenario.s1 || '';
+                document.getElementById('pt-s2').value = st.scenario.s2 || '';
+                document.getElementById('pt-s3').value = st.scenario.s3 || '';
+                if (st.scenario.fb) {
+                    document.getElementById('pt-skenario-feedback').textContent = st.scenario.fb;
+                }
+            }
+
+            if (st.sim) {
+                document.getElementById('pt-area').value = st.sim.area || 'telinga';
+                document.getElementById('pt-riwayat').value = st.sim.riwayat || 'tidak';
+                document.getElementById('pt-hasil').value = st.sim.hasil || 'negatif';
+                if (st.sim.result) {
+                    document.getElementById('pt-sim-result').innerHTML = st.sim.result;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

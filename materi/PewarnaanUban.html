@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Apersepsi • Single Application</title>
+
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --navbar-h: 55px;
+            --footer-h: 40px;
+            --brand: #ff3f8e;
+            --sidebar-w: 255px;
+            --sidebar-gap: 8px;
+            --line: #e5e7eb;
+            --pink: #ff6fae;
+            --pink-soft: #ffe6f1;
+            --gray-light: #f5f5f5;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            padding-bottom: var(--footer-h);
+            background: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .main-pad {
+            padding-top: var(--navbar-h);
+        }
+
+        main.app-shell {
+            min-height: calc(100vh - var(--navbar-h) - var(--footer-h));
+        }
+
+        .navbar,
+        .footer {
+            background: #fff;
+        }
+
+        .footer {
+            border-top: 1px solid #eee;
+        }
+
+        .menu-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+        }
+
+        .menu-title {
+            padding: .75rem 1rem;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            display: block;
+            padding: .6rem 1rem;
+            color: inherit;
+            text-decoration: none;
+            font-size: .95rem;
+        }
+
+        .menu-item:hover {
+            background: #fafafa;
+        }
+
+        .menu-item.active {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+
+        .no-top-gap>aside,
+        .no-top-gap>section {
+            padding-top: 0 !important;
+        }
+
+        .btn-brand {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .btn-brand:hover {
+            color: #fff;
+            filter: brightness(.95);
+        }
+
+        .materi-card .card-header {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: .5rem 1rem;
+        }
+
+        .page-nav {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-nav-inner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Mobile: sidebar ikut alur */
+        @media (max-width: 767.98px) {
+            .sidebar-fixed {
+                position: static;
+                width: 100%;
+            }
+        }
+
+        /* Desktop: sidebar fixed kiri, konten bergeser & card dipendekkan */
+        @media (min-width: 768px) {
+            .sidebar-fixed {
+                position: fixed;
+                top: var(--navbar-h);
+                left: 0;
+                width: var(--sidebar-w);
+                height: calc(100dvh - var(--navbar-h));
+                overflow-y: auto;
+            }
+
+            .content-with-fixed {
+                margin-left: calc(var(--sidebar-w) + var(--sidebar-gap));
+            }
+
+            .materi-card {
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100dvh - var(--navbar-h) - var(--footer-h) - 90px);
+            }
+
+            .materi-card .card-body {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .flashcard {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: .75rem;
+            cursor: pointer;
+            background: #fff;
+            transition: background .15s, box-shadow .15s;
+        }
+
+        .flashcard.active {
+            background: rgba(255, 63, 142, 0.04);
+            box-shadow: 0 0 0 1px rgba(255, 63, 142, 0.25);
+        }
+
+        .box {
+            fill: #fff;
+            stroke: #e5e7eb;
+            stroke-width: 2;
+            rx: 16;
+        }
+
+        .line {
+            stroke: var(--brand);
+            stroke-width: 3;
+        }
+
+        .text {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 18px;
+        }
+
+        .badge-pink {
+            background-color: var(--pink) !important;
+        }
+
+        .btn-pink {
+            background-color: var(--pink);
+            border-color: var(--pink);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .btn-pink:hover {
+            filter: brightness(1.05);
+            color: #fff;
+        }
+
+        .activity {
+            background: var(--pink-soft);
+            border-radius: 1rem;
+            border: 1px dashed #f09ec8;
+        }
+
+        .feedback.correct {
+            color: #2e7d32;
+            font-weight: 500;
+        }
+
+        .feedback.wrong {
+            color: #c62828;
+            font-weight: 500;
+        }
+
+        .feedback.info {
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* Simulasi uban (bar helai rambut) */
+        .hair-sim {
+            background: #faf6f8;
+            border-radius: 1rem;
+            border: 1px solid #f3c3da;
+            padding: .5rem .75rem;
+        }
+
+        .strand-row {
+            display: flex;
+            gap: 4px;
+            margin: .25rem 0 .5rem;
+        }
+
+        .strand {
+            width: 14px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #bbbbbb;
+            background: #e3c5a5;
+            /* rambut normal */
+        }
+
+        .strand.uban {
+            background: #c5c5c5;
+            /* uban */
+        }
+
+        .legend-box {
+            width: 14px;
+            height: 14px;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .legend-alami {
+            background: #e3c5a5;
+        }
+
+        .legend-uban {
+            background: #c5c5c5;
+        }
+
+        textarea.form-control {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        @media (max-width: 767.98px) {
+            .card-body p {
+                text-align: justify;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light navbar-expand-lg fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+                <i class="bi bi-brush" style="font-size:1.25rem; color:var(--brand)"></i>
+                <strong>Pewarnaan Rambut</strong> <span class="fw-normal">• Single Application</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navs">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navs">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-semibold" style="color:var(--brand)"
+                            aria-current="page" href="videopengantar.html">Materi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../evaluasi.html">Latihan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../kd.html">Tujuan Pembelajaran</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../peta.html">Peta Konsep</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN: sidebar + konten -->
+    <main class="main-pad app-shell">
+        <div class="container-fluid">
+            <div class="row g-1 no-top-gap">
+                <!-- SIDEBAR -->
+                <aside class="col-12 col-md-auto order-1 order-md-0 p-0">
+                    <nav class="menu-card sidebar-fixed shadow-sm">
+                        <div class="menu-title"><i class="bi bi-journal-bookmark"></i> Single Application</div>
+                        <a class="menu-item" aria-current="page" href="videopengantar.html">
+                            <i class="bi bi-lightbulb">Video Pengantar</i>
+                        </a>
+                        <a class="menu-item" aria-current="page" href="SingleApplication.html">
+                            <i class="bi bi-lightbulb"></i> Overview Single Application
+                        </a>
+
+                        <!-- A. Pewarnaan Rambut Single -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-A" aria-expanded="true"
+                            aria-controls="submenu-A">
+                            <span class="me-2"><i class="bi bi-droplet-half"></i></span>
+                            <span class="flex-grow-1 text-start">A. Pewarnaan Rambut Single</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-A">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="PewarnaanSingleApplication.html">1. Pewarnaan Single
+                                        Application</a></li>
+                                <li><a class="menu-item py-1" href="CaraMemilihWarna.html">2. Cara Memilih Warna</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="MemilihWarnaCat.html">3. Memilih Warna Cat</a></li>
+                                <li><a class="menu-item py-1" href="KontraindikasiPewarnaan.html">4. Kontraindikasi
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="HalYangDiperhatikan.html">5. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanA.html">6. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- B. Toning -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-B" aria-expanded="true"
+                            aria-controls="submenu-B">
+                            <span class="me-2"><i class="bi bi-palette"></i></span>
+                            <span class="flex-grow-1 text-start">B. Toning</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-B">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="HairToning.html">1. Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="CiriHairToning.html">2. Ciri Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="KeunggulanHairToning.html">3. Keunggulan Hair
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1" href="KosmetikHairToning.html">4. Kosmetik Hair Toning</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="ProsedurToning.html">5. Prosedur Melakukan
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1" href="HalDiperhatikanToning.html">6. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanB.html">7. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- C. Pewarnaan Uban -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-C" aria-expanded="true"
+                            aria-controls="submenu-C">
+                            <span class="me-2"><i class="bi bi-person-lines-fill"></i></span>
+                            <span class="flex-grow-1 text-start">C. Pewarnaan Uban</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-C">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1 active" href="PewarnaanUban.html">1. Pewarnaan Uban</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="JenisPewarnaanUban.html">2. Jenis Pewarnaan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="TeknikPewarnaanUban.html">3. Teknik Pewarnaan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="UjiTempel.html">4. Uji Tempel</a></li>
+                                <li><a class="menu-item py-1" href="ProsedurKerjaUban.html">5. Prosedur Kerja</a></li>
+                                <li><a class="menu-item py-1" href="ReaksiAlergiUban.html">6. Reaksi Alergi</a></li>
+                                <li><a class="menu-item py-1" href="KesalahanPewarnaanUban.html">7. Kesalahan
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="AyoLakukanC.html">8. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Evaluasi -->
+                        <a class="menu-item" href="../evaluasi.html">
+                            <i class="bi bi-clipboard-check"></i> Evaluasi
+                        </a>
+                        <a class="menu-item" href="VideoPentup.html">
+                            <i class="bi bi-camera-video"></i> Evaluasi
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- KONTEN KANAN -->
+                <section class="col-12 col-md-9 col-xl-10 content-with-fixed order-2 order-md-0">
+                    <div class="card shadow-sm materi-card">
+                        <div class="card-header d-flex align-items-center gap-2">
+                            <i class="bi bi-lightbulb" style="color:var(--brand); font-size:1.25rem;"></i>
+                            <h3 class="h5 mb-0 fw-bold">Video Pengantar
+                        </div>
+
+                        <div class="card-body" id="apersepsi-hair-coloring">
+                            <h1 class="h3 mb-1">C. Pewarnaan Uban</h1>
+                            <h2 class="h5 text-muted mb-3">1. Konsep Pewarnaan Uban</h2>
+                            <p class="mb-4">
+                                Pewarnaan uban adalah proses mewarnai rambut yang kehilangan pigmen (rambut putih atau
+                                abu-abu)
+                                untuk menutup uban dan mengembalikan kesan warna rambut alami. Di bawah ini ada
+                                penjelasan,
+                                latihan interaktif, dan simulasi sederhana yang bisa kamu simpan menggunakan
+                                <em>localStorage</em>.
+                            </p>
+
+                            <!-- SECTION 1: KONSEP DASAR -->
+                            <div class="card shadow-sm mb-3" id="section-konsep">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h3 class="h6 mb-0">Konsep Dasar</h3>
+                                        <span class="badge rounded-pill badge-pink">Materi Pokok</span>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-md-12">
+                                            <p>
+                                                Pewarnaan rambut beruban adalah proses mewarnai rambut yang mengalami
+                                                uban
+                                                (rambut putih atau abu-abu). Tujuannya untuk menutup uban dan
+                                                mengembalikan
+                                                warna rambut sehingga tampak lebih segar dan muda.
+                                            </p>
+                                            <p>
+                                                Uban muncul ketika folikel rambut kehilangan pigmen melanin. Proses ini
+                                                biasanya terjadi seiring bertambahnya usia, tetapi bisa juga dipengaruhi
+                                                faktor seperti genetik, pola hidup, dan stres.
+                                            </p>
+                                            <p>
+                                                Melalui pewarnaan uban, rambut dapat kembali tampak lebih gelap dan
+                                                berwarna.
+                                                Teknik yang digunakan bisa menutup uban secara penuh atau hanya
+                                                menyamarkannya,
+                                                tergantung kebutuhan dan keinginan klien.
+                                            </p>
+
+                                            <div class="activity p-3 mt-2">
+                                                <p class="fw-semibold mb-2">Aktivitas 1: Cek Pemahaman Konsep</p>
+                                                <p class="mb-2">Pilih jawaban yang paling tepat.</p>
+
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="quiz-konsep"
+                                                        value="tujuan-benar" id="q1a" data-key="quiz-konsep">
+                                                    <label class="form-check-label" for="q1a">
+                                                        Tujuan utama pewarnaan uban adalah menutup uban dan
+                                                        mengembalikan kesan
+                                                        warna rambut alami.
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="quiz-konsep"
+                                                        value="hanya-fashion" id="q1b" data-key="quiz-konsep">
+                                                    <label class="form-check-label" for="q1b">
+                                                        Tujuan utamanya hanya mengikuti tren tanpa ada hubungannya
+                                                        dengan uban.
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="quiz-konsep"
+                                                        value="merusak" id="q1c" data-key="quiz-konsep">
+                                                    <label class="form-check-label" for="q1c">
+                                                        Tujuan utamanya membuat rambut tampak rusak agar uban menyatu.
+                                                    </label>
+                                                </div>
+
+                                                <div class="d-flex flex-wrap gap-2 mt-3">
+                                                    <button type="button" class="btn btn-pink"
+                                                        onclick="saveSection('section-konsep')">💾 Simpan</button>
+                                                    <button type="button" class="btn btn-secondary"
+                                                        onclick="resetSection('section-konsep')">♻ Reset</button>
+                                                </div>
+                                                <div class="feedback mt-2"></div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECTION 2: FAKTOR -->
+                            <div class="card shadow-sm mb-3" id="section-faktor">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h3 class="h6 mb-0">Faktor Terjadinya Uban</h3>
+                                        <span class="badge rounded-pill badge-pink">Latihan Reflektif</span>
+                                    </div>
+
+                                    <p>
+                                        Uban sebenarnya merupakan hal yang wajar terjadi pada setiap orang. Faktor usia,
+                                        keturunan, dan gaya hidup berpengaruh terhadap cepat atau lambatnya uban muncul.
+                                        Kebiasaan merokok, stres berkepanjangan, dan pola makan yang tidak seimbang
+                                        dapat membuat uban muncul lebih awal.
+                                    </p>
+                                    <p>
+                                        Pewarnaan uban dapat membantu klien merasa lebih percaya diri, terutama bagi
+                                        mereka yang belum siap menerima tampilan beruban.
+                                    </p>
+
+                                    <div class="activity p-3 mt-2">
+                                        <p class="fw-semibold mb-2">Aktivitas 2: Tandai Faktor yang Berpengaruh</p>
+                                        <p class="mb-2">Pilih faktor yang menurutmu paling berpengaruh terhadap
+                                            munculnya uban lebih cepat:</p>
+
+                                        <div class="row row-cols-1 row-cols-sm-2 g-1 mb-2">
+                                            <div class="col">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="f1"
+                                                        data-key="faktor-usia">
+                                                    <label class="form-check-label" for="f1">Usia (penuaan
+                                                        alami)</label>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="f2"
+                                                        data-key="faktor-genetik">
+                                                    <label class="form-check-label" for="f2">Keturunan/genetik</label>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="f3"
+                                                        data-key="faktor-merokok">
+                                                    <label class="form-check-label" for="f3">Kebiasaan merokok</label>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="f4"
+                                                        data-key="faktor-stres">
+                                                    <label class="form-check-label" for="f4">Stres
+                                                        berkepanjangan</label>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="f5"
+                                                        data-key="faktor-pola">
+                                                    <label class="form-check-label" for="f5">Pola makan & gaya hidup
+                                                        tidak sehat</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <label for="refleksi" class="form-label mt-2">
+                                            Kapan menurutmu seseorang sebaiknya mulai mempertimbangkan pewarnaan uban?
+                                        </label>
+                                        <textarea id="refleksi" class="form-control" data-key="refleksi-faktor"
+                                            placeholder="Contoh: ketika uban mulai mengganggu rasa percaya diri klien..."></textarea>
+
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            <button type="button" class="btn btn-pink"
+                                                onclick="saveSection('section-faktor')">💾 Simpan</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                onclick="resetSection('section-faktor')">♻ Reset</button>
+                                        </div>
+                                        <div class="feedback mt-2 info"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECTION 3: SIMULASI -->
+                            <div class="card shadow-sm mb-4" id="section-simulasi">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h3 class="h6 mb-0">Simulasi: Perkembangan Uban & Kebutuhan Pewarnaan</h3>
+                                        <span class="badge rounded-pill badge-pink">Simulasi Interaktif</span>
+                                    </div>
+
+                                    <p>
+                                        Simulasi ini membantu memvisualisasikan seberapa banyak uban yang mungkin muncul
+                                        berdasarkan kelompok usia, gaya hidup, dan faktor genetik sederhana. Hasilnya
+                                        bukan perhitungan medis, tetapi digunakan sebagai latihan kapan pewarnaan uban
+                                        mulai dibutuhkan.
+                                    </p>
+
+                                    <div class="activity p-3 mt-2">
+                                        <p class="fw-semibold mb-2">Langkah 1: Atur Kondisi Klien</p>
+
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-md-4">
+                                                <label for="sim-usia" class="form-label mb-1">Kelompok usia</label>
+                                                <select id="sim-usia" class="form-select form-select-sm"
+                                                    data-key="sim-usia">
+                                                    <option value="">— Pilih —</option>
+                                                    <option value="muda">&lt; 30 tahun</option>
+                                                    <option value="dewasa">30–45 tahun</option>
+                                                    <option value="lanjut">&gt; 45 tahun</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="sim-gayahidup" class="form-label mb-1">Gaya hidup</label>
+                                                <select id="sim-gayahidup" class="form-select form-select-sm"
+                                                    data-key="sim-gayahidup">
+                                                    <option value="">— Pilih —</option>
+                                                    <option value="sehat">Cukup sehat (olahraga, jarang merokok)
+                                                    </option>
+                                                    <option value="sedang">Sedang (kadang begadang/stres)</option>
+                                                    <option value="kurang">Kurang sehat (sering stres/merokok)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="sim-genetik" class="form-label mb-1">Faktor keturunan
+                                                    uban</label>
+                                                <select id="sim-genetik" class="form-select form-select-sm"
+                                                    data-key="sim-genetik">
+                                                    <option value="">— Pilih —</option>
+                                                    <option value="lemah">Keluarga jarang beruban dini</option>
+                                                    <option value="kuat">Orang tua/keluarga banyak beruban dini</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="hair-sim mt-2">
+                                            <div class="small fw-semibold mb-1">Perkiraan pola uban</div>
+                                            <div id="hair-row" class="strand-row">
+                                                <!-- 10 helai rambut -->
+                                                <span class="strand"></span>
+                                                <span class="strand"></span>
+                                                <span class="strand"></span>
+                                                <span class="strand"></span>
+                                                <span class="strand"></span>
+                                                <span class="strand"></span>
+                                                <span class="strand"></span>
+                                                <span class="strand"></span>
+                                                <span class="strand"></span>
+                                                <span class="strand"></span>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-3 small">
+                                                <span><span class="legend-box legend-alami"></span> Rambut berpigmen
+                                                    normal</span>
+                                                <span><span class="legend-box legend-uban"></span> Uban (rambut
+                                                    putih/abu-abu)</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            <button type="button" class="btn btn-pink"
+                                                onclick="runGraySimulation(true)">💾 Simulasikan &amp; Simpan</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                onclick="resetSection('section-simulasi')">♻ Reset Simulasi</button>
+                                        </div>
+
+                                        <div id="sim-result" class="sim-result mt-2">
+                                            Pilih usia, gaya hidup, dan faktor genetik, lalu klik
+                                            <strong>“Simulasikan &amp; Simpan”</strong> untuk melihat perkiraan
+                                            persentase uban
+                                            dan saran pewarnaan.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- TOMBOL NAVIGASI DI BAWAH KONTEN -->
+                    <div class="page-nav">
+                        <div class="page-nav-inner">
+                            <a class="btn btn-outline-secondary" href="AyoLakukanB.html">
+                                <i class="bi bi-arrow-left"></i> Sebelumnya
+                            </a>
+                            <a class="btn btn-brand" href="JenisPewarnaanUban.html">
+                                Berikutnya <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer fixed-bottom py-2">
+        <div class="container d-flex justify-content-between align-items-center small">
+            <span>SMKS ISFI BANJARMASIN • Hair Coloring</span>
+            <span class="text-muted">© 2025 • Single Application</span>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const STORAGE_PREFIX = "konsep_uban_bs_";
+
+        // kumpulkan semua input di dalam sebuah section
+        function collectSectionData(sectionElement) {
+            const data = {};
+            const elems = sectionElement.querySelectorAll("[data-key]");
+            elems.forEach(el => {
+                const key = el.dataset.key;
+                if (!key) return;
+
+                if (el.tagName === "TEXTAREA" || el.tagName === "SELECT") {
+                    data[key] = el.value;
+                } else if (el.type === "radio") {
+                    if (!data.hasOwnProperty(key)) data[key] = null;
+                    if (el.checked) data[key] = el.value;
+                } else if (el.type === "checkbox") {
+                    data[key] = el.checked;
+                } else {
+                    data[key] = el.value;
+                }
+            });
+            return data;
+        }
+
+        function restoreSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+
+            const raw = localStorage.getItem(STORAGE_PREFIX + sectionId);
+            if (!raw) {
+                if (sectionId === "section-simulasi") initDefaultHair();
+                return;
+            }
+
+            let data;
+            try { data = JSON.parse(raw); } catch { return; }
+
+            const elems = section.querySelectorAll("[data-key]");
+            elems.forEach(el => {
+                const key = el.dataset.key;
+                if (!(key in data)) return;
+
+                if (el.tagName === "TEXTAREA" || el.tagName === "SELECT") {
+                    el.value = data[key];
+                } else if (el.type === "radio") {
+                    el.checked = el.value === data[key];
+                } else if (el.type === "checkbox") {
+                    el.checked = !!data[key];
+                } else {
+                    el.value = data[key];
+                }
+            });
+
+            showFeedback(sectionId);
+
+            if (sectionId === "section-simulasi") {
+                runGraySimulation(false); // refresh visual tanpa menulis ulang storage
+                const res = document.getElementById("sim-result");
+                res.innerHTML += "<br><em>Simulasi terakhir dimuat dari penyimpanan.</em>";
+            }
+        }
+
+        function saveSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            const data = collectSectionData(section);
+            localStorage.setItem(STORAGE_PREFIX + sectionId, JSON.stringify(data));
+            showFeedback(sectionId);
+        }
+
+        function resetSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+
+            const elems = section.querySelectorAll("[data-key]");
+            elems.forEach(el => {
+                if (el.tagName === "TEXTAREA" || el.tagName === "SELECT") {
+                    el.value = "";
+                } else if (el.type === "radio" || el.type === "checkbox") {
+                    el.checked = false;
+                } else {
+                    el.value = "";
+                }
+            });
+
+            localStorage.removeItem(STORAGE_PREFIX + sectionId);
+
+            const fb = section.querySelector(".feedback");
+            if (fb) {
+                fb.textContent = "";
+                fb.className = "feedback";
+            }
+
+            if (sectionId === "section-simulasi") {
+                initDefaultHair();
+                document.getElementById("sim-result").innerHTML =
+                    'Pilih usia, gaya hidup, dan faktor genetik, lalu klik <strong>“Simulasikan &amp; Simpan”</strong> untuk melihat perkiraan persentase uban dan saran pewarnaan.';
+            }
+        }
+
+        function getRadioValue(name) {
+            const checked = document.querySelector('input[name="' + name + '"]:checked');
+            return checked ? checked.value : null;
+        }
+
+        function showFeedback(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            const fb = section.querySelector(".feedback");
+            if (!fb) return;
+            fb.className = "feedback";
+
+            if (sectionId === "section-konsep") {
+                const val = getRadioValue("quiz-konsep");
+                if (!val) {
+                    fb.textContent = "Pilih dulu jawaban yang menurutmu paling tepat.";
+                    fb.classList.add("info");
+                } else if (val === "tujuan-benar") {
+                    fb.textContent = "Benar! Pewarnaan uban bertujuan menutup uban dan mengembalikan kesan warna rambut alami.";
+                    fb.classList.add("correct");
+                } else {
+                    fb.textContent = "Belum tepat. Baca kembali bagian tentang tujuan pewarnaan uban.";
+                    fb.classList.add("wrong");
+                }
+            }
+
+            if (sectionId === "section-faktor") {
+                fb.textContent = "Pilihan faktor dan refleksimu sudah tersimpan. Bagus!";
+                fb.classList.add("info");
+            }
+        }
+
+        // ==== SIMULASI UBAN ====
+        function initDefaultHair() {
+            const row = document.getElementById("hair-row");
+            if (!row) return;
+            const strands = row.querySelectorAll(".strand");
+            strands.forEach((s, i) => {
+                s.className = "strand";
+                if (i < 3) s.classList.add("uban"); // default: sedikit uban
+            });
+        }
+
+        function runGraySimulation(shouldSave = true) {
+            const usia = document.getElementById("sim-usia").value;
+            const gaya = document.getElementById("sim-gayahidup").value;
+            const gen = document.getElementById("sim-genetik").value;
+            const res = document.getElementById("sim-result");
+
+            if (shouldSave) {
+                const section = document.getElementById("section-simulasi");
+                const data = collectSectionData(section);
+                localStorage.setItem(STORAGE_PREFIX + "section-simulasi", JSON.stringify(data));
+            }
+
+            if (!usia || !gaya || !gen) {
+                res.innerHTML = "Lengkapi semua pilihan dulu agar simulasi lebih akurat.";
+                initDefaultHair();
+                return;
+            }
+
+            let persen = 10;
+            if (usia === "muda") persen += 0;
+            else if (usia === "dewasa") persen += 25;
+            else if (usia === "lanjut") persen += 45;
+
+            if (gaya === "sehat") persen -= 10;
+            else if (gaya === "sedang") persen += 0;
+            else if (gaya === "kurang") persen += 10;
+
+            if (gen === "kuat") persen += 15;
+
+            persen = Math.max(0, Math.min(90, persen));
+
+            const row = document.getElementById("hair-row");
+            const strands = row.querySelectorAll(".strand");
+            const total = strands.length;
+            const ubanCount = Math.round(total * (persen / 100));
+
+            strands.forEach((s, i) => {
+                s.className = "strand";
+                if (i < ubanCount) s.classList.add("uban");
+            });
+
+            let rekom;
+            if (persen < 20) {
+                rekom = "Uban masih sedikit. Bisa dipertimbangkan teknik halus seperti gray blending ringan atau bahkan tanpa pewarnaan jika klien nyaman.";
+            } else if (persen < 50) {
+                rekom = "Jumlah uban sedang. Pewarnaan seperti highlight, lowlights, atau gray blending dapat membantu menyamarkannya.";
+            } else {
+                rekom = "Uban sudah cukup banyak. Pewarnaan penuh (full coverage) atau kombinasi teknik menjadi pilihan umum.";
+            }
+
+            const teksUsia =
+                usia === "muda" ? "&lt; 30 tahun" :
+                    usia === "dewasa" ? "30–45 tahun" :
+                        "&gt; 45 tahun";
+
+            res.innerHTML =
+                "<strong>Perkiraan uban:</strong> " + persen.toFixed(0) + "% dari seluruh rambut." +
+                "<br><strong>Profil klien:</strong> Usia " + teksUsia +
+                ", gaya hidup " + gaya + ", faktor genetik " + (gen === "kuat" ? "kuat" : "lemah") + "." +
+                "<br><strong>Saran pewarnaan:</strong> " + rekom;
+        }
+
+        // Inisialisasi saat halaman dibuka
+        document.addEventListener("DOMContentLoaded", () => {
+            ["section-konsep", "section-faktor", "section-simulasi"].forEach(restoreSection);
+            if (!localStorage.getItem(STORAGE_PREFIX + "section-simulasi")) {
+                initDefaultHair();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

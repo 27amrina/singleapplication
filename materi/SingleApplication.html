@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bab 6 • Single Application</title>
+
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --navbar-h: 55px;
+            --footer-h: 40px;
+            --brand: #ff3f8e;
+            --sidebar-w: 255px;
+            --sidebar-gap: 8px;
+            --line: #e5e7eb;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            padding-bottom: var(--footer-h);
+            background: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .main-pad {
+            padding-top: var(--navbar-h);
+        }
+
+        main.app-shell {
+            min-height: calc(100vh - var(--navbar-h) - var(--footer-h));
+        }
+
+        .navbar,
+        .footer {
+            background: #fff;
+        }
+
+        .footer {
+            border-top: 1px solid #eee;
+        }
+
+        .menu-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+        }
+
+        .menu-title {
+            padding: .75rem 1rem;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            display: block;
+            padding: .6rem 1rem;
+            color: inherit;
+            text-decoration: none;
+            font-size: .95rem;
+        }
+
+        .menu-item:hover {
+            background: #fafafa;
+        }
+
+        .menu-item.active {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+
+        .no-top-gap>aside,
+        .no-top-gap>section {
+            padding-top: 0 !important;
+        }
+
+        .btn-brand {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .btn-brand:hover {
+            color: #fff;
+            filter: brightness(.95);
+        }
+
+        .materi-card .card-header {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: .5rem 1rem;
+        }
+
+        .page-nav {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-nav-inner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        #apersepsi-hair-coloring figure img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            object-fit: cover;
+            max-height: 420px;
+        }
+
+        /* PERTANYAAN PEMANTIK ATAS */
+
+        .pemantik-atas-list {
+            padding-left: 1.2rem;
+            margin-bottom: 0;
+        }
+
+        .pemantik-input-wrap {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .pemantik-num-box {
+            width: 40px;
+            min-width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .pemantik-textarea {
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            resize: vertical;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .pemantik-textarea:focus {
+            box-shadow: none;
+            background: transparent;
+        }
+
+        /* Mobile: sidebar ikut alur */
+        @media (max-width: 767.98px) {
+            .sidebar-fixed {
+                position: static;
+                width: 100%;
+            }
+        }
+
+        /* Desktop: sidebar fixed kiri, konten bergeser & card dipendekkan */
+        @media (min-width: 768px) {
+            .sidebar-fixed {
+                position: fixed;
+                top: var(--navbar-h);
+                left: 0;
+                width: var(--sidebar-w);
+                height: calc(100dvh - var(--navbar-h));
+                overflow-y: auto;
+            }
+
+            .content-with-fixed {
+                margin-left: calc(var(--sidebar-w) + var(--sidebar-gap));
+            }
+
+            .materi-card {
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100dvh - var(--navbar-h) - var(--footer-h) - 90px);
+            }
+
+            .materi-card .card-body {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .flashcard {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: .75rem;
+            cursor: pointer;
+            background: #fff;
+            transition: background .15s, box-shadow .15s;
+        }
+
+        .flashcard.active {
+            background: rgba(255, 63, 142, 0.04);
+            box-shadow: 0 0 0 1px rgba(255, 63, 142, 0.25);
+        }
+
+        .sec-title {
+            border-left: 4px solid var(--brand);
+            padding-left: .5rem;
+            font-weight: 600;
+            margin-bottom: .75rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light navbar-expand-lg fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+                <i class="bi bi-brush" style="font-size:1.25rem; color:var(--brand)"></i>
+                <strong>Pewarnaan Rambut</strong> <span class="fw-normal">• Single Application</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navs">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navs">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-semibold" style="color:var(--brand)"
+                            aria-current="page" href="videopengantar.html">Materi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../latihan.html">Latihan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../kd.html">Tujuan Pembelajaran</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../peta.html">Peta Konsep</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-pad app-shell">
+        <div class="container-fluid">
+            <div class="row g-1 no-top-gap">
+                <!-- SIDEBAR -->
+                <aside class="col-12 col-md-auto order-1 order-md-0 p-0">
+                    <nav class="menu-card sidebar-fixed shadow-sm">
+                        <div class="menu-title"><i class="bi bi-journal-bookmark"></i> Single Application</div>
+
+                        <a class="menu-item" aria-current="page" href="videopengantar.html">
+                            <i class="bi bi-lightbulb">Video Pengantar</i>
+                        </a>
+
+                        <a class="menu-item active" aria-current="page" href="SingleApplication.html">
+                            <i class="bi bi-lightbulb"></i> Single Application
+                        </a>
+
+                        <!-- A. Pewarnaan Rambut Single -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-A" aria-expanded="true"
+                            aria-controls="submenu-A">
+                            <span class="me-2"><i class="bi bi-droplet-half"></i></span>
+                            <span class="flex-grow-1 text-start">A. Pewarnaan Rambut Single</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-A">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1 " href="PewarnaanSingleApplication.html">1.
+                                        Pewarnaan
+                                        Single
+                                        Application</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="CaraMemilihWarna.html">2. Cara Memilih Warna</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="MemilihWarnaCat.html">3. Memilih Warna Cat</a></li>
+                                <li><a class="menu-item py-1" href="KontraindikasiPewarnaan.html">4. Kontraindikasi
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="HalYangDiperhatikan.html">5. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanA.html">6. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- B. Toning -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-B" aria-expanded="true"
+                            aria-controls="submenu-B">
+                            <span class="me-2"><i class="bi bi-palette"></i></span>
+                            <span class="flex-grow-1 text-start">B. Toning</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-B">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="HairToning.html">1. Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="CiriHairToning.html">2. Ciri Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="KeunggulanHairToning.html">3. Keunggulan Hair
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1" href="KosmetikHairToning.html">4. Kosmetik Hair Toning</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="ProsedurToning.html">5. Prosedur Melakukan
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1" href="HalDiperhatikanToning.html">6. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanB.html">7. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- C. Pewarnaan Uban -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-C" aria-expanded="true"
+                            aria-controls="submenu-C">
+                            <span class="me-2"><i class="bi bi-person-lines-fill"></i></span>
+                            <span class="flex-grow-1 text-start">C. Pewarnaan Uban</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-C">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="PewarnaanUban.html">1. Pewarnaan Uban</a></li>
+                                <li><a class="menu-item py-1" href="JenisPewarnaanUban.html">2. Jenis Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="TeknikPewarnaanUban.html">3. Teknik Pewarnaan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="UjiTempel.html">4. Uji Tempel</a></li>
+                                <li><a class="menu-item py-1" href="ProsedurKerjaUban.html">5. Prosedur Kerja</a></li>
+                                <li><a class="menu-item py-1" href="ReaksiAlergiUban.html">6. Reaksi Alergi</a></li>
+                                <li><a class="menu-item py-1" href="KesalahanPewarnaanUban.html">7. Kesalahan
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="AyoLakukanC.html">8. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Evaluasi -->
+                        <a class="menu-item" href="../evaluasi.html">
+                            <i class="bi bi-clipboard-check"></i> Evaluasi
+                        </a>
+                        <a class="menu-item" href="VideoPentup.html">
+                            <i class="bi bi-camera-video"></i> Evaluasi
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- KONTEN KANAN -->
+                <section class="col-12 col-md-9 col-xl-10 content-with-fixed order-2 order-md-0">
+                    <div class="card shadow-sm materi-card">
+                        <div class="card-header d-flex align-items-center gap-2">
+                            <i class="bi bi-lightbulb" style="color:var(--brand); font-size:1.25rem;"></i>
+                            <h3 class="h5 mb-0 fw-bold">Single Application</h3>
+                        </div>
+
+                        <div class="card-body" id="apersepsi-hair-coloring">
+                            <!-- Gambar -->
+                            <figure style="text-align: center; margin: 0px 0;">
+                                <img src="../img/pinteres.png" alt="Contoh hasil pewarnaan rambut"
+                                    style="max-width: 100%; height: 1500px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <figcaption style="color: #6c757d; font-size: 0.9em; margin-top: 8px;">
+                                    Sumber: lorealprofessionnel/Loreal
+                                </figcaption>
+                            </figure>
+
+                            <!-- PERTANYAAN PEMANTIK (sejarah pewarnaan rambut) -->
+                            <section class="mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="sec-title">
+                                            <i class="bi bi-question-circle"></i> Pertanyaan Pemantik
+                                        </div>
+                                        <p class="small text-muted">
+                                            Sebelum mempelajari materi, jawablah pertanyaan berikut untuk mengaitkan
+                                            materi
+                                            dengan pengalamanmu.
+                                        </p>
+
+                                        <ol class="pemantik-atas-list">
+                                            <!-- SOAL 1 -->
+                                            <li class="mb-3">
+                                                <div class="fw-semibold mb-1">
+                                                    Kapan pewarnaan rambut mulai dikenal/ditemukan?
+                                                </div>
+                                                <div class="pemantik-input-wrap d-flex align-items-stretch gap-3">
+                                                    <div class="pemantik-num-box">1</div>
+                                                    <textarea id="pem1" class="form-control pemantik-textarea" rows="2"
+                                                        placeholder="Isi di sini"></textarea>
+                                                </div>
+                                            </li>
+
+                                            <!-- SOAL 2 -->
+                                            <li class="mb-3">
+                                                <div class="fw-semibold mb-1">
+                                                    Dari mana praktik mengubah warna rambut berasal?
+                                                </div>
+                                                <div class="pemantik-input-wrap d-flex align-items-stretch gap-3">
+                                                    <div class="pemantik-num-box">2</div>
+                                                    <textarea id="pem2" class="form-control pemantik-textarea" rows="2"
+                                                        placeholder="Isi di sini"></textarea>
+                                                </div>
+                                            </li>
+
+                                            <!-- SOAL 3 -->
+                                            <li class="mb-1">
+                                                <div class="fw-semibold mb-1">
+                                                    Bagaimana proses panjang pewarnaan tersebut dimulai?
+                                                </div>
+                                                <div class="pemantik-input-wrap d-flex align-items-stretch gap-3">
+                                                    <div class="pemantik-num-box">3</div>
+                                                    <textarea id="pem3" class="form-control pemantik-textarea" rows="2"
+                                                        placeholder="Isi di sini"></textarea>
+                                                </div>
+                                            </li>
+                                        </ol>
+
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            <button class="btn btn-brand btn-sm" id="savePemantik">SIMPAN</button>
+                                            <button class="btn btn-outline-danger btn-sm" id="resetPemantik">RESET /
+                                                HAPUS</button>
+                                        </div>
+                                        <div id="pemantikMsg" class="small mt-1"></div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- TUJUAN PEMBELAJARAN -->
+                            <section class="mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="sec-title"><i class="bi bi-bullseye"></i> Tujuan Pembelajaran</div>
+                                        <p class="small text-muted mb-2">Centang jika kamu merasa sudah memahami.</p>
+                                        <div class="list-group">
+                                            <label class="list-group-item">
+                                                <input class="form-check-input me-2 tujuan-check" type="checkbox"
+                                                    id="t1">
+                                                Kalian dapat memahami konsep pewarnaan rambut teknik single application.
+                                            </label>
+                                            <label class="list-group-item">
+                                                <input class="form-check-input me-2 tujuan-check" type="checkbox"
+                                                    id="t2">
+                                                Kalian dapat memahami pewarnaan hair toning.
+                                            </label>
+                                            <label class="list-group-item">
+                                                <input class="form-check-input me-2 tujuan-check" type="checkbox"
+                                                    id="t3">
+                                                Kalian dapat melakukan pewarnaan uban.
+                                            </label>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button class="btn btn-brand btn-sm" id="saveTujuan">SIMPAN</button>
+                                                <button class="btn btn-outline-danger btn-sm" id="resetTujuan">RESET
+                                                </button>
+                                            </div>
+                                            <div class="small text-muted">
+                                                Progres:
+                                                <span id="tujuanPercent">0%</span>
+                                            </div>
+                                        </div>
+                                        <div class="progress mt-1" style="height:6px;">
+                                            <div id="tujuanBar" class="progress-bar" style="width:0%;"></div>
+                                        </div>
+                                        <div id="tujuanMsg" class="small mt-1"></div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- PETA KONSEP -->
+                            <section class="mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="sec-title"><i class="bi bi-diagram-3"></i> Peta Konsep</div>
+                                        <p class="small text-muted">
+                                            Materi pembelajaran tentang teknik pewarnaan rambut aplikasi tunggal (single
+                                            application) dapat
+                                            dipelajari dengan mudah dengan mengamati peta konsep berikut.
+                                        </p>
+                                        <div class="d-flex justify-content-center">
+                                            <svg width="560" height="220" xmlns="http://www.w3.org/2000/svg">
+
+                                                <!-- Definisi panah -->
+                                                <defs>
+                                                    <marker id="arrowPink" markerWidth="8" markerHeight="8" refX="7"
+                                                        refY="4" orient="auto" markerUnits="strokeWidth">
+                                                        <path d="M0,0 L8,4 L0,8 z" fill="#f472b6" />
+                                                    </marker>
+                                                </defs>
+
+                                                <!-- Kotak kiri (utama) -->
+                                                <rect x="30" y="60" width="240" height="100" rx="15" fill="#ffffff"
+                                                    stroke="#d1d5db" />
+                                                <rect x="30" y="60" width="240" height="100" rx="15"
+                                                    fill="url(#gradMain)" opacity="0.05" />
+
+                                                <text x="150" y="95" text-anchor="middle" font-size="13"
+                                                    font-weight="600">
+                                                    Teknik Pewarnaan Rambut
+                                                </text>
+                                                <text x="150" y="115" text-anchor="middle" font-size="13"
+                                                    font-weight="600">
+                                                    Aplikasi Tunggal
+                                                </text>
+                                                <text x="150" y="135" text-anchor="middle" font-size="12">
+                                                    (Single Application)
+                                                </text>
+
+                                                <!-- Kotak kanan 1 -->
+                                                <rect x="320" y="30" width="190" height="50" rx="12" fill="#f9fafb"
+                                                    stroke="#d1d5db" />
+                                                <text x="415" y="55" text-anchor="middle" font-size="13"
+                                                    font-weight="600">
+                                                    Pewarnaan Rambut
+                                                </text>
+                                                <text x="415" y="72" text-anchor="middle" font-size="13">
+                                                    Teknik Single Application
+                                                </text>
+
+                                                <!-- Kotak kanan 2 -->
+                                                <rect x="320" y="95" width="190" height="50" rx="12" fill="#f9fafb"
+                                                    stroke="#d1d5db" />
+                                                <text x="415" y="125" text-anchor="middle" font-size="13"
+                                                    font-weight="600">
+                                                    Toning
+                                                </text>
+
+                                                <!-- Kotak kanan 3 -->
+                                                <rect x="320" y="160" width="190" height="50" rx="12" fill="#f9fafb"
+                                                    stroke="#d1d5db" />
+                                                <text x="415" y="190" text-anchor="middle" font-size="13"
+                                                    font-weight="600">
+                                                    Pewarnaan Uban
+                                                </text>
+
+                                                <!-- Garis & panah (perpaduan pink + abu) -->
+                                                <!-- Dari kotak kiri ke titik cabang -->
+                                                <line x1="270" y1="110" x2="300" y2="110" stroke="#f472b6"
+                                                    stroke-width="2" marker-end="url(#arrowPink)" />
+
+                                                <!-- Titik cabang (node kecil abu-abu) -->
+                                                <circle cx="300" cy="110" r="3" fill="#9ca3af" />
+
+                                                <!-- Panah dari node ke kotak kanan atas -->
+                                                <line x1="300" y1="110" x2="320" y2="55" stroke="#f472b6"
+                                                    stroke-width="2" marker-end="url(#arrowPink)" />
+
+                                                <!-- Panah dari node ke kotak kanan tengah -->
+                                                <line x1="300" y1="110" x2="320" y2="120" stroke="#f472b6"
+                                                    stroke-width="2" marker-end="url(#arrowPink)" />
+
+                                                <!-- Panah dari node ke kotak kanan bawah -->
+                                                <line x1="300" y1="110" x2="320" y2="185" stroke="#f472b6"
+                                                    stroke-width="2" marker-end="url(#arrowPink)" />
+                                            </svg>
+                                        </div>
+
+
+
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- KATA KUNCI -->
+                            <section class="mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="sec-title"><i class="bi bi-key"></i> Kata Kunci</div>
+                                        <p class="small text-muted mb-2">Ketuk setiap kata kunci untuk melihat
+                                            penjelasan
+                                            singkat.</p>
+                                        <div class="row g-3">
+                                            <div class="col-sm-6 col-lg-3">
+                                                <div class="flashcard"
+                                                    data-def="Proses mengubah warna rambut dengan bahan kimia atau alami.">
+                                                    <div class="fw-semibold">Pewarnaan rambut</div>
+                                                    <div class="text-muted small mt-1">Ketuk untuk lihat penjelasan
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-3">
+                                                <div class="flashcard"
+                                                    data-def="Teknik pewarnaan dengan satu kali aplikasi warna ke seluruh rambut.">
+                                                    <div class="fw-semibold">Single application</div>
+                                                    <div class="text-muted small mt-1">Ketuk untuk lihat penjelasan
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-3">
+                                                <div class="flashcard"
+                                                    data-def="Pewarnaan khusus untuk menutup atau menyamarkan rambut putih/abu-abu.">
+                                                    <div class="fw-semibold">Pewarnaan uban</div>
+                                                    <div class="text-muted small mt-1">Ketuk untuk lihat penjelasan
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-3">
+                                                <div class="flashcard"
+                                                    data-def="Jenis pewarna yang hasilnya bertahan lama dan sulit hilang dengan keramas biasa.">
+                                                    <div class="fw-semibold">Pewarnaan permanen</div>
+                                                    <div class="text-muted small mt-1">Ketuk untuk lihat penjelasan
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-3">
+                                                <div class="flashcard"
+                                                    data-def="Proses pemberian warna lembut untuk menetralkan atau mengoreksi tona rambut.">
+                                                    <div class="fw-semibold">Toning</div>
+                                                    <div class="text-muted small mt-1">Ketuk untuk lihat penjelasan
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- APERSEPSI (paragraf sesuai buku + isian) -->
+                            <section class="mb-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="sec-title"><i class="bi bi-chat-dots"></i> Apersepsi</div>
+                                        <p>
+                                            Pewarnaan rambut dengan teknik single application adalah proses pewarnaan di
+                                            mana
+                                            warna diterapkan ke
+                                            seluruh rambut dalam satu kali aplikasi. Teknik ini bertujuan untuk
+                                            memberikan warna
+                                            yang seragam dan
+                                            merata pada seluruh rambut, baik untuk tujuan mengubah warna rambut secara
+                                            keseluruhan, menutupi uban,
+                                            atau memperkuat warna alami rambut.
+                                        </p>
+                                        <p>
+                                            Pewarnaan single application biasanya digunakan untuk menciptakan tampilan
+                                            yang
+                                            lebih konsisten dan
+                                            menyeluruh tanpa memerlukan beberapa tahap atau aplikasi berulang. Untuk
+                                            lebih
+                                            memahami penjelasan
+                                            dari pewarnaan teknik single application, yuk simak penjelasannya dalam
+                                            materi
+                                            berikut ini.
+                                        </p>
+
+                                        <label class="form-label fw-semibold mt-2" for="aperTxt">
+                                            Tulis kembali dengan bahasamu sendiri apa yang kamu pahami tentang single
+                                            application:
+                                        </label>
+                                        <textarea id="aperTxt" class="form-control" rows="3"
+                                            placeholder="Tulis pemahamanmu di sini..."></textarea>
+
+                                        <div class="mt-2">
+                                            <label class="form-label small text-muted" for="aperScale">
+                                                Seberapa paham kamu? (0 = belum paham, 5 = sangat paham)
+                                            </label>
+                                            <input id="aperScale" type="range" min="0" max="5" step="1" value="0" />
+                                        </div>
+
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            <button class="btn btn-brand btn-sm" id="saveAper">SIMPAN</button>
+                                            <button class="btn btn-outline-danger btn-sm" id="resetAper">RESET /
+                                                HAPUS</button>
+                                        </div>
+                                        <div id="aperMsg" class="small mt-1"></div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- JAWAB YUK! -->
+                            <section class="mb-2">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <div class="sec-title"><i class="bi bi-pencil-square"></i> Jawab Yuk!</div>
+                                        <p class="small text-muted">
+                                            Sebelum mempelajari materi tentang teknik pewarnaan rambut aplikasi tunggal
+                                            (single
+                                            application),
+                                            silakan kalian jawab pertanyaan berikut ini!
+                                        </p>
+
+                                        <ol class="mb-3">
+                                            <li>Apakah kalian pernah melakukan pewarnaan rambut permanen atau
+                                                semipermanen untuk
+                                                menutupi uban?
+                                            </li>
+                                            <li>Seberapa sering kalian melakukan <em>touch-up</em> atau perawatan ulang
+                                                untuk
+                                                menjaga warna uban
+                                                tetap tertutup?</li>
+                                            <li>Apakah kalian mengetahui teknik pewarnaan yang memungkinkan efek lebih
+                                                alami,
+                                                seperti balayage
+                                                atau highlight khusus uban?</li>
+                                            <li>Tahukah kalian berbagai jenis produk kosmetik tertentu, seperti yang
+                                                berbahan
+                                                alami atau bebas
+                                                amonia?</li>
+                                        </ol>
+
+                                        <div class="vstack gap-2">
+                                            <textarea id="jy1" class="form-control" rows="2"
+                                                placeholder="Jawaban untuk pertanyaan 1..."></textarea>
+                                            <textarea id="jy2" class="form-control" rows="2"
+                                                placeholder="Jawaban untuk pertanyaan 2..."></textarea>
+                                            <textarea id="jy3" class="form-control" rows="2"
+                                                placeholder="Jawaban untuk pertanyaan 3..."></textarea>
+                                            <textarea id="jy4" class="form-control" rows="2"
+                                                placeholder="Jawaban untuk pertanyaan 4..."></textarea>
+                                        </div>
+
+                                        <div class="d-flex flex-wrap gap-2 mt-2">
+                                            <button class="btn btn-brand btn-sm" id="saveJawab">SIMPAN</button>
+                                            <button class="btn btn-outline-danger btn-sm" id="resetJawab">RESET /
+                                                HAPUS</button>
+                                        </div>
+                                        <div id="jawabMsg" class="small mt-1"></div>
+                                    </div>
+                                </div>
+                            </section>
+
+                        </div>
+                    </div>
+
+                    <!-- NAV BAWAH (opsional) -->
+                    <div class="page-nav">
+                        <div class="page-nav-inner">
+                            <a class="btn btn-outline-secondary" href="videopengantar.html">
+                                <i class="bi bi-arrow-left"></i> Sebelumnya
+                            </a>
+                            <a class="btn btn-brand" href="PewarnaanSingleApplication.html">
+                                Berikutnya <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer fixed-bottom py-2">
+        <div class="container d-flex justify-content-between align-items-center small">
+            <span>SMKS ISFI BANJARMASIN • Hair Coloring</span>
+            <span class="text-muted">© 2025 • Single Application</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ==== HELPER PESAN ====
+        function showMsg(el, text, type = "success") {
+            if (!el) return;
+            el.textContent = text;
+            el.className = "small mt-1 text-" + (type === "success" ? "success" : "danger");
+            setTimeout(() => { el.textContent = ""; el.className = "small mt-1"; }, 2500);
+        }
+
+        // ==== FLASHCARD KATA KUNCI ====
+        document.querySelectorAll(".flashcard").forEach(card => {
+            const label = card.querySelector(".text-muted.small");
+            const def = card.dataset.def;
+            card.addEventListener("click", () => {
+                const active = card.classList.toggle("active");
+                label.textContent = active ? def : "Ketuk untuk lihat penjelasan";
+            });
+        });
+
+        // ==== LOCAL STORAGE KEYS ====
+        const KEY_PEMANTIK = "bab6_pemantik";
+        const KEY_TUJUAN = "bab6_tujuan";
+        const KEY_APER = "bab6_apersepsi";
+        const KEY_JAWAB = "bab6_jawabyuk";
+
+        // ==== LOAD DATA PADA SAAT AWAL ====
+        window.addEventListener("DOMContentLoaded", () => {
+            // pemantik (3 isian)
+            const pemData = JSON.parse(localStorage.getItem(KEY_PEMANTIK) || "null");
+            if (pemData) {
+                ["pem1", "pem2", "pem3"].forEach((id, i) => {
+                    const el = document.getElementById(id);
+                    if (el && pemData[i] !== undefined) el.value = pemData[i];
+                });
+            }
+
+            // tujuan
+            const tujuanData = JSON.parse(localStorage.getItem(KEY_TUJUAN) || "null");
+            if (tujuanData) {
+                ["t1", "t2", "t3"].forEach((id, i) => {
+                    const el = document.getElementById(id);
+                    if (el) el.checked = !!tujuanData[i];
+                });
+            }
+            updateTujuanProgress();
+
+            // apersepsi
+            const aperData = JSON.parse(localStorage.getItem(KEY_APER) || "null");
+            if (aperData) {
+                const aperTxt = document.getElementById("aperTxt");
+                const aperScale = document.getElementById("aperScale");
+                if (aperTxt) aperTxt.value = aperData.text || "";
+                if (aperScale) aperScale.value = aperData.scale || 0;
+            }
+
+            // jawabyuk
+            const jawabData = JSON.parse(localStorage.getItem(KEY_JAWAB) || "null");
+            if (jawabData) {
+                ["jy1", "jy2", "jy3", "jy4"].forEach((id, i) => {
+                    const el = document.getElementById(id);
+                    if (el && jawabData[i] !== undefined) el.value = jawabData[i];
+                });
+            }
+        });
+
+        // ==== PERTANYAAN PEMANTIK ====
+        const savePemBtn = document.getElementById("savePemantik");
+        const resetPemBtn = document.getElementById("resetPemantik");
+
+        if (savePemBtn) {
+            savePemBtn.addEventListener("click", () => {
+                const values = ["pem1", "pem2", "pem3"].map(id => document.getElementById(id).value.trim());
+                localStorage.setItem(KEY_PEMANTIK, JSON.stringify(values));
+                showMsg(document.getElementById("pemantikMsg"), "Jawaban pertanyaan pemantik tersimpan.");
+            });
+        }
+
+        if (resetPemBtn) {
+            resetPemBtn.addEventListener("click", () => {
+                ["pem1", "pem2", "pem3"].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = "";
+                });
+                localStorage.removeItem(KEY_PEMANTIK);
+                showMsg(document.getElementById("pemantikMsg"), "Jawaban pertanyaan pemantik dihapus.", "danger");
+            });
+        }
+
+        // ==== TUJUAN PEMBELAJARAN ====
+        const tujuanChecks = document.querySelectorAll(".tujuan-check");
+        const tujuanBar = document.getElementById("tujuanBar");
+        const tujuanPercent = document.getElementById("tujuanPercent");
+
+        function updateTujuanProgress() {
+            const total = tujuanChecks.length;
+            const checked = Array.from(tujuanChecks).filter(c => c.checked).length;
+            const percent = total ? Math.round(checked / total * 100) : 0;
+            if (tujuanBar) tujuanBar.style.width = percent + "%";
+            if (tujuanPercent) tujuanPercent.textContent = percent + "%";
+        }
+
+        tujuanChecks.forEach(chk => chk.addEventListener("change", updateTujuanProgress));
+
+        const saveTujuanBtn = document.getElementById("saveTujuan");
+        const resetTujuanBtn = document.getElementById("resetTujuan");
+
+        if (saveTujuanBtn) {
+            saveTujuanBtn.addEventListener("click", () => {
+                const data = ["t1", "t2", "t3"].map(id => document.getElementById(id).checked);
+                localStorage.setItem(KEY_TUJUAN, JSON.stringify(data));
+                updateTujuanProgress();
+                showMsg(document.getElementById("tujuanMsg"), "Status tujuan pembelajaran tersimpan.");
+            });
+        }
+
+
+        if (resetTujuanBtn) {
+            resetTujuanBtn.addEventListener("click", () => {
+                ["t1", "t2", "t3"].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.checked = false;
+                });
+                localStorage.removeItem(KEY_TUJUAN);
+                updateTujuanProgress();
+                showMsg(document.getElementById("tujuanMsg"), "Status tujuan pembelajaran dihapus.", "danger");
+            });
+        }
+
+        // ==== APERSEPSI ====
+        const saveAperBtn = document.getElementById("saveAper");
+        const resetAperBtn = document.getElementById("resetAper");
+
+        if (saveAperBtn) {
+            saveAperBtn.addEventListener("click", () => {
+                const text = document.getElementById("aperTxt").value.trim();
+                const scale = document.getElementById("aperScale").value;
+                localStorage.setItem(KEY_APER, JSON.stringify({ text, scale }));
+                showMsg(document.getElementById("aperMsg"), "Jawaban apersepsi tersimpan.");
+            });
+        }
+
+
+        if (resetAperBtn) {
+            resetAperBtn.addEventListener("click", () => {
+                document.getElementById("aperTxt").value = "";
+                document.getElementById("aperScale").value = 0;
+                localStorage.removeItem(KEY_APER);
+                showMsg(document.getElementById("aperMsg"), "Jawaban apersepsi dihapus.", "danger");
+            });
+        }
+
+        // ==== JAWAB YUK! ====
+        const saveJawabBtn = document.getElementById("saveJawab");
+        const resetJawabBtn = document.getElementById("resetJawab");
+
+        if (saveJawabBtn) {
+            saveJawabBtn.addEventListener("click", () => {
+                const data = ["jy1", "jy2", "jy3", "jy4"].map(id => document.getElementById(id).value.trim());
+                localStorage.setItem(KEY_JAWAB, JSON.stringify(data));
+                showMsg(document.getElementById("jawabMsg"), "Jawaban 'Jawab Yuk!' tersimpan.");
+            });
+        }
+
+
+        if (resetJawabBtn) {
+            resetJawabBtn.addEventListener("click", () => {
+                ["jy1", "jy2", "jy3", "jy4"].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = "";
+                });
+                localStorage.removeItem(KEY_JAWAB);
+                showMsg(document.getElementById("jawabMsg"), "Jawaban 'Jawab Yuk!' dihapus.", "danger");
+            });
+        }
+
+        // ==== RESET SEMUA (opsional, hanya jika tombol ada) ====
+        const resetAllBtn = document.getElementById("resetAll");
+        if (resetAllBtn) {
+            resetAllBtn.addEventListener("click", () => {
+                if (!confirm("Yakin ingin menghapus SEMUA jawaban pada halaman ini?")) return;
+
+                ["resetPemantik", "resetTujuan", "resetAper", "resetJawab"].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.click();
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>

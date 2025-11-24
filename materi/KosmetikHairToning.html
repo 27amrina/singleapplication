@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Apersepsi • Single Application</title>
+
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --navbar-h: 55px;
+            --footer-h: 40px;
+            --brand: #ff3f8e;
+            --sidebar-w: 255px;
+            --sidebar-gap: 8px;
+            --line: #e5e7eb;
+            --kt-pink: #ff3f8e;
+            --kt-pink-soft: #ffe6f3;
+            --kt-gray: #e5e7eb;
+            --kt-gray-text: #6b7280;
+            --kt-white: #ffffff;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            padding-bottom: var(--footer-h);
+            background: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .main-pad {
+            padding-top: var(--navbar-h);
+        }
+
+        main.app-shell {
+            min-height: calc(100vh - var(--navbar-h) - var(--footer-h));
+        }
+
+        .navbar,
+        .footer {
+            background: #fff;
+        }
+
+        .footer {
+            border-top: 1px solid #eee;
+        }
+
+        .menu-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+        }
+
+        .menu-title {
+            padding: .75rem 1rem;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            display: block;
+            padding: .6rem 1rem;
+            color: inherit;
+            text-decoration: none;
+            font-size: .95rem;
+        }
+
+        .menu-item:hover {
+            background: #fafafa;
+        }
+
+        .menu-item.active {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+
+        .no-top-gap>aside,
+        .no-top-gap>section {
+            padding-top: 0 !important;
+        }
+
+        .btn-brand {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .btn-brand:hover {
+            color: #fff;
+            filter: brightness(.95);
+        }
+
+        .materi-card .card-header {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: .5rem 1rem;
+        }
+
+        .page-nav {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-nav-inner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Mobile: sidebar ikut alur */
+        @media (max-width: 767.98px) {
+            .sidebar-fixed {
+                position: static;
+                width: 100%;
+            }
+        }
+
+        /* Desktop: sidebar fixed kiri, konten bergeser & card dipendekkan */
+        @media (min-width: 768px) {
+            .sidebar-fixed {
+                position: fixed;
+                top: var(--navbar-h);
+                left: 0;
+                width: var(--sidebar-w);
+                height: calc(100dvh - var(--navbar-h));
+                overflow-y: auto;
+            }
+
+            .content-with-fixed {
+                margin-left: calc(var(--sidebar-w) + var(--sidebar-gap));
+            }
+
+            .materi-card {
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100dvh - var(--navbar-h) - var(--footer-h) - 90px);
+            }
+
+            .materi-card .card-body {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        .flashcard {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: .75rem;
+            cursor: pointer;
+            background: #fff;
+            transition: background .15s, box-shadow .15s;
+        }
+
+        .flashcard.active {
+            background: rgba(255, 63, 142, 0.04);
+            box-shadow: 0 0 0 1px rgba(255, 63, 142, 0.25);
+        }
+
+        .box {
+            fill: #fff;
+            stroke: #e5e7eb;
+            stroke-width: 2;
+            rx: 16;
+        }
+
+        .line {
+            stroke: var(--brand);
+            stroke-width: 3;
+        }
+
+        .text {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 18px;
+        }
+
+        .kt-section {
+            background: var(--kt-white);
+            border-radius: 16px;
+            border: 1px solid var(--kt-gray);
+            padding: 1.25rem;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+            margin-bottom: 1.5rem;
+        }
+
+        .kt-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--kt-pink);
+            margin-bottom: .4rem;
+        }
+
+        .kt-subtitle {
+            font-size: .95rem;
+            color: var(--kt-gray-text);
+            margin-bottom: .75rem;
+        }
+
+        .kt-badge {
+            display: inline-block;
+            padding: .15rem .6rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 600;
+            background: var(--kt-pink-soft);
+            color: var(--kt-pink);
+            margin-bottom: .25rem;
+        }
+
+        .kt-two-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .kt-box {
+            background: #fafafa;
+            border-radius: 12px;
+            padding: .75rem .9rem;
+            border: 1px solid var(--kt-gray);
+            font-size: .9rem;
+        }
+
+        .kt-box h5 {
+            font-size: .95rem;
+            margin-bottom: .35rem;
+            color: #111827;
+        }
+
+        .kt-box ul {
+            padding-left: 1.1rem;
+            margin-bottom: 0;
+        }
+
+        .kt-box li {
+            margin-bottom: .25rem;
+        }
+
+        .kt-figure {
+            text-align: center;
+            margin: 1rem auto;
+        }
+
+        .kt-figure img {
+            max-width: 260px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        }
+
+        .kt-figure figcaption {
+            font-size: .8rem;
+            color: var(--kt-gray-text);
+            margin-top: .25rem;
+        }
+
+        /* chips drag */
+        .kt-chip {
+            display: inline-block;
+            padding: .25rem .6rem;
+            border-radius: 999px;
+            background: var(--kt-pink-soft);
+            color: #111827;
+            font-size: .8rem;
+            margin: .15rem;
+            cursor: grab;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            user-select: none;
+        }
+
+        .kt-dropzone {
+            min-height: 80px;
+            border-radius: 12px;
+            border: 2px dashed var(--kt-gray);
+            padding: .5rem;
+            font-size: .8rem;
+            color: var(--kt-gray-text);
+            background: #f9fafb;
+            transition: .15s;
+        }
+
+        .kt-dropzone.active {
+            border-color: var(--kt-pink);
+            background: var(--kt-pink-soft);
+        }
+
+        .kt-dropzone.correct {
+            border-color: #16a34a;
+            background: #ecfdf3;
+        }
+
+        .kt-dropzone.wrong {
+            border-color: #dc2626;
+            background: #fef2f2;
+        }
+
+        .kt-btn {
+            border-radius: 999px;
+            border: 1px solid var(--kt-pink);
+            color: var(--kt-pink);
+            background: var(--kt-white);
+            font-size: .8rem;
+            padding: .3rem .9rem;
+            margin-top: .25rem;
+            margin-right: .35rem;
+            cursor: pointer;
+        }
+
+        .kt-btn.primary {
+            background: var(--kt-pink);
+            color: #fff;
+        }
+
+        .kt-btn:hover {
+            filter: brightness(.97);
+        }
+
+        .kt-feedback {
+            font-size: .8rem;
+            margin-top: .35rem;
+        }
+
+        .kt-select,
+        .kt-range {
+            font-size: .85rem;
+            border-radius: 999px;
+            border: 1px solid var(--kt-gray);
+            padding: .25rem .6rem;
+            width: 100%;
+        }
+
+        .kt-sim-box {
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid var(--kt-gray);
+            padding: .75rem;
+            font-size: .85rem;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light navbar-expand-lg fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+                <i class="bi bi-brush" style="font-size:1.25rem; color:var(--brand)"></i>
+                <strong>Pewarnaan Rambut</strong> <span class="fw-normal">• Single Application</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navs">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navs">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-semibold" style="color:var(--brand)"
+                            aria-current="page" href="videopengantar.html">Materi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../evaluasi.html">Latihan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../kd.html">Tujuan Pembelajaran</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../peta.html">Peta Konsep</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN: sidebar + konten -->
+    <main class="main-pad app-shell">
+        <div class="container-fluid">
+            <div class="row g-1 no-top-gap">
+                <!-- SIDEBAR -->
+                <aside class="col-12 col-md-auto order-1 order-md-0 p-0">
+                    <nav class="menu-card sidebar-fixed shadow-sm">
+                        <div class="menu-title"><i class="bi bi-journal-bookmark"></i> Single Application</div>
+                        <a class="menu-item " aria-current="page" href="videopengantar.html">
+                            <i class="bi bi-lightbulb">Video Pengantar</i>
+                        </a>
+                        <a class="menu-item" aria-current="page" href="SingleApplication.html">
+                            <i class="bi bi-lightbulb"></i> Overview Single Application
+                        </a>
+
+                        <!-- A. Pewarnaan Rambut Single -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-A" aria-expanded="true"
+                            aria-controls="submenu-A">
+                            <span class="me-2"><i class="bi bi-droplet-half"></i></span>
+                            <span class="flex-grow-1 text-start">A. Pewarnaan Rambut Single</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-A">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="PewarnaanSingleApplication.html">1. Pewarnaan Single
+                                        Application</a></li>
+                                <li><a class="menu-item py-1" href="CaraMemilihWarna.html">2. Cara Memilih Warna</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="MemilihWarnaCat.html">3. Memilih Warna Cat</a></li>
+                                <li><a class="menu-item py-1" href="KontraindikasiPewarnaan.html">4. Kontraindikasi
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="HalYangDiperhatikan.html">5. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanA.html">6. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- B. Toning -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-B" aria-expanded="true"
+                            aria-controls="submenu-B">
+                            <span class="me-2"><i class="bi bi-palette"></i></span>
+                            <span class="flex-grow-1 text-start">B. Toning</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-B">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="HairToning.html">1. Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="CiriHairToning.html">2. Ciri Hair Toning</a></li>
+                                <li><a class="menu-item py-1" href="KeunggulanHairToning.html">3. Keunggulan Hair
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1 active" href="KosmetikHairToning.html">4. Kosmetik Hair
+                                        Toning</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="ProsedurToning.html">5. Prosedur Melakukan
+                                        Toning</a></li>
+                                <li><a class="menu-item py-1" href="HalDiperhatikanToning.html">6. Hal Diperhatikan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="AyoLakukanB.html">7. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- C. Pewarnaan Uban -->
+                        <button class="d-flex align-items-center w-100 border-0 bg-transparent menu-item" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#submenu-C" aria-expanded="true"
+                            aria-controls="submenu-C">
+                            <span class="me-2"><i class="bi bi-person-lines-fill"></i></span>
+                            <span class="flex-grow-1 text-start">C. Pewarnaan Uban</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </button>
+                        <div class="collapse show" id="submenu-C">
+                            <ul class="nav flex-column ps-4 my-1">
+                                <li><a class="menu-item py-1" href="PewarnaanUban.html">1. Pewarnaan Uban</a></li>
+                                <li><a class="menu-item py-1" href="JenisPewarnaanUban.html">2. Jenis Pewarnaan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="TeknikPewarnaanUban.html">3. Teknik Pewarnaan</a>
+                                </li>
+                                <li><a class="menu-item py-1" href="UjiTempel.html">4. Uji Tempel</a></li>
+                                <li><a class="menu-item py-1" href="ProsedurKerjaUban.html">5. Prosedur Kerja</a></li>
+                                <li><a class="menu-item py-1" href="ReaksiAlergiUban.html">6. Reaksi Alergi</a></li>
+                                <li><a class="menu-item py-1" href="KesalahanPewarnaanUban.html">7. Kesalahan
+                                        Pewarnaan</a></li>
+                                <li><a class="menu-item py-1" href="AyoLakukanC.html">8. Ayo Lakukan</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Evaluasi -->
+                        <a class="menu-item" href="../evaluasi.html">
+                            <i class="bi bi-clipboard-check"></i> Evaluasi
+                        </a>
+                        <a class="menu-item" href="VideoPentup.html">
+                            <i class="bi bi-camera-video"></i> Evaluasi
+                        </a>
+                    </nav>
+                </aside>
+
+                <!-- KONTEN KANAN -->
+                <section class="col-12 col-md-9 col-xl-10 content-with-fixed order-2 order-md-0">
+                    <div class="card shadow-sm materi-card">
+                        <div class="card-header d-flex align-items-center gap-2">
+                            <i class="bi bi-lightbulb" style="color:var(--brand); font-size:1.25rem;"></i>
+                            <h3 class="h5 mb-0 fw-bold">Kosmetik untuk Hair Toning
+                        </div>
+
+                        <div class="card-body" id="apersepsi-hair-coloring">
+
+                            <section class="kt-section">
+                                <div class="kt-title">4. Kosmetik untuk Hair Toning</div>
+                                <div class="kt-subtitle">
+                                    Berikut beberapa jenis kosmetik yang digunakan untuk menunjang proses
+                                    <strong>hair toning</strong>, baik saat koreksi warna maupun perawatan rutinnya.
+                                </div>
+
+                                <div class="kt-two-col mb-2">
+                                    <div class="kt-box">
+                                        <span class="kt-badge">a. Toning</span>
+                                        <p class="mb-2">
+                                            Produk utama hair toning, umumnya berbentuk <em>cream</em> atau krim warna.
+                                            Diaplikasikan setelah proses pemutihan atau pewarnaan untuk
+                                            menetralkan warna yang tidak diinginkan (kuning/oranye) dan
+                                            menghasilkan warna rambut yang lebih seimbang.
+                                        </p>
+                                        <ul>
+                                            <li>Dipakai di salon sebagai langkah koreksi warna.</li>
+                                            <li>Biasanya dicampur dengan developer khusus toning.</li>
+                                        </ul>
+                                        <figure class="kt-figure">
+                                            <img src="../img/6,2.png" alt="Produk Hair Toning">
+                                            <figcaption>
+                                                Gambar 6.2 Produk Hair Toning<br>
+                                                Sumber: bp-guide/Best Present (2024)
+                                            </figcaption>
+                                        </figure>
+                                    </div>
+
+                                    <div class="kt-box">
+                                        <span class="kt-badge">b. Purple Shampoo</span>
+                                        <p class="mb-2">
+                                            Sampo dengan pigmen ungu untuk menghilangkan nada kuning dari rambut
+                                            pirang atau abu-abu. Purple shampoo sering digunakan sebagai
+                                            <strong>perawatan rutin</strong> di antara jadwal toning di salon.
+                                        </p>
+                                        <ul>
+                                            <li>Dipakai seperti sampo biasa, tetapi tidak untuk setiap hari.</li>
+                                            <li>Membantu mempertahankan hasil toning agar tidak cepat menguning.</li>
+                                        </ul>
+                                        <figure class="kt-figure">
+                                            <img src="../img/6,3.png" alt="Purple Shampoo dan Conditioner">
+                                            <figcaption>
+                                                Gambar 6.3 Purple Shampoo<br>
+                                                Sumber: botanic hearth/Botanic Hearth Cosmeceutical (2024)
+                                            </figcaption>
+                                        </figure>
+                                    </div>
+                                </div>
+
+                                <div class="kt-two-col">
+                                    <div class="kt-box">
+                                        <span class="kt-badge">c. Glosses / Glazes</span>
+                                        <p class="mb-2">
+                                            Produk yang memberi <strong>kilau tambahan</strong> sekaligus menambahkan
+                                            sedikit warna
+                                            untuk menyegarkan rambut yang sudah diwarnai. Membantu mempertahankan
+                                            warna toner lebih lama.
+                                        </p>
+                                    </div>
+
+                                    <div class="kt-box">
+                                        <span class="kt-badge">d. Color Depositing Conditioners</span>
+                                        <p class="mb-2">
+                                            Kondisioner yang mengandung pigmen warna untuk memperkuat dan
+                                            mempertahankan warna toning. Selain itu juga melembutkan dan
+                                            menutrisi rambut.
+                                        </p>
+                                    </div>
+
+                                    <div class="kt-box">
+                                        <span class="kt-badge">e. Hair Mask with Color</span>
+                                        <p class="mb-2">
+                                            Masker rambut dengan pigmen warna; memberikan perawatan intensif,
+                                            hidrasi, sekaligus menambah warna. Cocok untuk rambut yang kering
+                                            setelah bleaching.
+                                        </p>
+                                    </div>
+
+                                    <div class="kt-box">
+                                        <span class="kt-badge">f. Leave-In Treatments</span>
+                                        <p class="mb-2">
+                                            Produk perawatan tanpa bilas yang mengandung pigmen toning untuk
+                                            memberi warna sementara sekaligus merawat rambut, membantu
+                                            mempertahankan warna yang diinginkan lebih lama.
+                                        </p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- ===== 2. INTERAKTIF: COCOKKAN PRODUK & FUNGSI ===== -->
+                            <section class="kt-section" id="kt-act2">
+                                <div class="kt-title">Latihan 1 – Cocokkan Produk dan Fungsinya</div>
+                                <div class="kt-subtitle">
+                                    Pilih jenis kosmetik yang <strong>paling tepat</strong> untuk setiap fungsi di bawah
+                                    ini.
+                                    Gunakan tombol <em>Simpan</em> agar jawabanmu tersimpan.
+                                </div>
+
+                                <div class="mb-2">
+                                    <p class="mb-1">1) Menetralkan warna kuning/oranye <strong>langsung setelah
+                                            bleaching</strong>.</p>
+                                    <select id="kt-m1" class="kt-select">
+                                        <option value="">-- pilih --</option>
+                                        <option value="toning">Toning (krim toning)</option>
+                                        <option value="purple">Purple shampoo</option>
+                                        <option value="gloss">Glosses / glazes</option>
+                                        <option value="cond">Color depositing conditioner</option>
+                                        <option value="mask">Hair mask with color</option>
+                                        <option value="leavein">Leave-in treatment berpigmen</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-2">
+                                    <p class="mb-1">2) Menghilangkan nada kuning di <strong>antara</strong> jadwal
+                                        toning salon.</p>
+                                    <select id="kt-m2" class="kt-select">
+                                        <option value="">-- pilih --</option>
+                                        <option value="toning">Toning (krim toning)</option>
+                                        <option value="purple">Purple shampoo</option>
+                                        <option value="gloss">Glosses / glazes</option>
+                                        <option value="cond">Color depositing conditioner</option>
+                                        <option value="mask">Hair mask with color</option>
+                                        <option value="leavein">Leave-in treatment berpigmen</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-2">
+                                    <p class="mb-1">3) Menambah <strong>kilau dan sedikit warna</strong> pada rambut
+                                        yang sudah diwarnai.</p>
+                                    <select id="kt-m3" class="kt-select">
+                                        <option value="">-- pilih --</option>
+                                        <option value="toning">Toning (krim toning)</option>
+                                        <option value="purple">Purple shampoo</option>
+                                        <option value="gloss">Glosses / glazes</option>
+                                        <option value="cond">Color depositing conditioner</option>
+                                        <option value="mask">Hair mask with color</option>
+                                        <option value="leavein">Leave-in treatment berpigmen</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-2">
+                                    <p class="mb-1">4) Menjaga warna toning tetap kuat sambil <strong>melembutkan
+                                            rambut</strong>.</p>
+                                    <select id="kt-m4" class="kt-select">
+                                        <option value="">-- pilih --</option>
+                                        <option value="toning">Toning (krim toning)</option>
+                                        <option value="purple">Purple shampoo</option>
+                                        <option value="gloss">Glosses / glazes</option>
+                                        <option value="cond">Color depositing conditioner</option>
+                                        <option value="mask">Hair mask with color</option>
+                                        <option value="leavein">Leave-in treatment berpigmen</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-2">
+                                    <p class="mb-1">5) Rambut sangat kering setelah bleaching, perlu <strong>hidrasi
+                                            intensif + warna lembut</strong>.</p>
+                                    <select id="kt-m5" class="kt-select">
+                                        <option value="">-- pilih --</option>
+                                        <option value="toning">Toning (krim toning)</option>
+                                        <option value="purple">Purple shampoo</option>
+                                        <option value="gloss">Glosses / glazes</option>
+                                        <option value="cond">Color depositing conditioner</option>
+                                        <option value="mask">Hair mask with color</option>
+                                        <option value="leavein">Leave-in treatment berpigmen</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-2">
+                                    <p class="mb-1">6) Klien sibuk dan ingin produk <strong>tanpa bilas</strong> yang
+                                        bisa dipakai di rumah.</p>
+                                    <select id="kt-m6" class="kt-select">
+                                        <option value="">-- pilih --</option>
+                                        <option value="toning">Toning (krim toning)</option>
+                                        <option value="purple">Purple shampoo</option>
+                                        <option value="gloss">Glosses / glazes</option>
+                                        <option value="cond">Color depositing conditioner</option>
+                                        <option value="mask">Hair mask with color</option>
+                                        <option value="leavein">Leave-in treatment berpigmen</option>
+                                    </select>
+                                </div>
+
+                                <button class="kt-btn primary" onclick="ktCheckMatch()">Cek Jawaban</button>
+                                <button class="kt-btn" onclick="ktSaveMatch()">Simpan</button>
+                                <button class="kt-btn" onclick="ktResetMatch()">Reset</button>
+                                <div id="kt-match-feedback" class="kt-feedback"></div>
+                            </section>
+
+                            <!-- ===== 3. SIMULASI RUTINITAS KOSMETIK ===== -->
+                            <section class="kt-section" id="kt-act3">
+                                <div class="kt-title">Simulasi – Merancang Rutinitas Kosmetik Toning</div>
+                                <div class="kt-subtitle">
+                                    Pilih kondisi rambut dan tingkat keseriusan perawatan. Sistem akan mensimulasikan
+                                    kombinasi produk kosmetik yang <strong>cocok</strong>, sekaligus menunjukkan
+                                    kelebihan dan hal yang perlu diwaspadai.
+                                </div>
+
+                                <div class="kt-two-col mb-2">
+                                    <div>
+                                        <label class="small mb-1 fw-semibold">Kondisi rambut klien</label>
+                                        <select id="kt-sim-cond" class="kt-select">
+                                            <option value="kuning">Baru bleaching, muncul kuning/oranye</option>
+                                            <option value="kering">Rambut diwarnai &amp; terasa kering/kusam</option>
+                                            <option value="stabil">Warna sudah bagus, ingin dipertahankan</option>
+                                            <option value="sibuk">Klien sangat sibuk, jarang ke salon</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="small mb-1 fw-semibold">Level perawatan</label>
+                                        <select id="kt-sim-level" class="kt-select">
+                                            <option value="minimal">Minimal (hemat dan sederhana)</option>
+                                            <option value="standar">Standar (seimbang biaya &amp; hasil)</option>
+                                            <option value="maksimal">Maksimal (fokus kualitas hasil)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="small mb-1 fw-semibold">Sensitivitas kulit kepala</label>
+                                    <input type="range" id="kt-sim-sense" class="kt-range" min="1" max="3" value="2">
+                                    <div class="d-flex justify-content-between"
+                                        style="font-size:.7rem;color:var(--kt-gray-text);">
+                                        <span>Rendah</span><span>Sedang</span><span>Tinggi</span>
+                                    </div>
+                                </div>
+
+                                <div class="kt-sim-box mb-2" id="kt-sim-result">
+                                    Atur pilihan di atas lalu klik <strong>Jalankan Simulasi</strong> untuk melihat
+                                    rekomendasi kombinasi kosmetik toning.
+                                </div>
+
+                                <button class="kt-btn primary" onclick="ktRunSim()">Jalankan Simulasi</button>
+                                <button class="kt-btn" onclick="ktSaveSim()">Simpan</button>
+                                <button class="kt-btn" onclick="ktResetSim()">Reset</button>
+                            </section>
+
+                        </div>
+                    </div>
+
+                    <!-- TOMBOL NAVIGASI DI BAWAH KONTEN -->
+                    <div class="page-nav">
+                        <div class="page-nav-inner">
+                            <a class="btn btn-outline-secondary" href="KeunggulanHairToning.html">
+                                <i class="bi bi-arrow-left"></i> Sebelumnya
+                            </a>
+                            <a class="btn btn-brand" href="ProsedurToning.html">
+                                Berikutnya <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer fixed-bottom py-2">
+        <div class="container d-flex justify-content-between align-items-center small">
+            <span>SMKS ISFI BANJARMASIN • Hair Coloring</span>
+            <span class="text-muted">© 2025 • Single Application</span>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const KT_LS_KEY = 'hair_toning_kosmetik_v1';
+
+        function ktLoadState() {
+            try {
+                const raw = localStorage.getItem(KT_LS_KEY);
+                return raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                console.warn('Gagal baca localStorage', e);
+                return {};
+            }
+        }
+        function ktSaveState(partial) {
+            try {
+                const current = ktLoadState();
+                const next = Object.assign({}, current, partial);
+                localStorage.setItem(KT_LS_KEY, JSON.stringify(next));
+            } catch (e) {
+                console.warn('Gagal simpan localStorage', e);
+            }
+        }
+
+        // ====== MATCH (Latihan 1) ======
+        const ktAnswerMatch = {
+            m1: 'toning',
+            m2: 'purple',
+            m3: 'gloss',
+            m4: 'cond',
+            m5: 'mask',
+            m6: 'leavein'
+        };
+
+        function ktCheckMatch() {
+            const ids = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'];
+            let benar = 0, total = ids.length, kosong = false;
+            ids.forEach(id => {
+                const v = document.getElementById('kt-' + id).value;
+                if (!v) kosong = true;
+                if (v === ktAnswerMatch[id]) benar++;
+            });
+            const fb = document.getElementById('kt-match-feedback');
+            if (kosong) {
+                fb.textContent = 'Lengkapi dulu semua nomor 1–6.';
+                fb.style.color = '#111827';
+                return;
+            }
+            if (benar === total) {
+                fb.textContent = '✅ Hebat! Kamu sudah dapat mencocokkan fungsi setiap kosmetik hair toning dengan tepat.';
+                fb.style.color = '#16a34a';
+            } else {
+                fb.textContent = '⚠️ Skor kamu ' + benar + '/' + total + '. Baca lagi penjelasan setiap produk di atas lalu perbaiki jawabanmu.';
+                fb.style.color = '#dc2626';
+            }
+        }
+
+        function ktSaveMatch() {
+            const ids = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'];
+            const state = {};
+            ids.forEach(id => state[id] = document.getElementById('kt-' + id).value);
+            state.feedback = document.getElementById('kt-match-feedback').innerHTML;
+            ktSaveState({ match: state });
+            const fb = document.getElementById('kt-match-feedback');
+            fb.textContent = '💾 Jawaban Latihan 1 tersimpan.';
+            fb.style.color = '#111827';
+        }
+
+        function ktResetMatch() {
+            if (!confirm('Yakin reset Latihan 1?')) return;
+            ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'].forEach(id => {
+                document.getElementById('kt-' + id).value = '';
+            });
+            document.getElementById('kt-match-feedback').textContent = '';
+            const st = ktLoadState();
+            st.match = undefined;
+            ktSaveState(st);
+        }
+
+        // ====== SIMULASI ======
+        function ktBuildSimText(cond, level, sense) {
+            let t = '';
+
+            // kondisi
+            if (cond === 'kuning') {
+                t += '• Kondisi: rambut baru di-bleaching dan muncul kuning/oranye.\n';
+                t += '  - Produk utama: toning (krim toning) wajib digunakan di salon.\n';
+                t += '  - Pendamping: purple shampoo untuk dipakai di rumah.\n\n';
+            } else if (cond === 'kering') {
+                t += '• Kondisi: rambut diwarnai terasa kering dan kusam.\n';
+                t += '  - Fokus pada perawatan: hair mask with color dan color depositing conditioner.\n';
+                t += '  - Glosses/glazes bisa dipakai untuk menambah kilau.\n\n';
+            } else if (cond === 'stabil') {
+                t += '• Kondisi: warna sudah bagus, hanya ingin dipertahankan.\n';
+                t += '  - Gunakan purple shampoo seperlunya dan/atau color depositing conditioner.\n';
+                t += '  - Glosses/glazes sesekali untuk mengembalikan kilau.\n\n';
+            } else {
+                t += '• Kondisi: klien sibuk dan jarang ke salon.\n';
+                t += '  - Pilih produk yang praktis: leave-in treatment berpigmen + purple shampoo.\n';
+                t += '  - Toning di salon hanya dilakukan saat warna benar-benar berubah jauh.\n\n';
+            }
+
+            // level perawatan
+            if (level === 'minimal') {
+                t += '• Level perawatan: MINIMAL.\n';
+                t += '  - Kelebihan: hemat waktu dan biaya.\n';
+                t += '  - Kelemahan: hasil toning mungkin lebih cepat pudar dan rambut butuh extra care jangka panjang.\n\n';
+            } else if (level === 'standar') {
+                t += '• Level perawatan: STANDAR.\n';
+                t += '  - Kombinasi seimbang antara produk koreksi warna (toning/purple shampoo)\n';
+                t += '    dan produk perawatan (conditioner, masker) sehingga warna dan kesehatan rambut tetap terjaga.\n\n';
+            } else {
+                t += '• Level perawatan: MAKSIMAL.\n';
+                t += '  - Menggunakan rangkaian lengkap: toning + purple shampoo + color depositing conditioner\n';
+                t += '    + hair mask with color, bahkan leave-in treatment.\n';
+                t += '  - Kelebihan: warna dan kilau sangat terjaga.\n';
+                t += '  - Kelemahan: membutuhkan komitmen waktu dan biaya lebih besar.\n\n';
+            }
+
+            // sensitivitas
+            if (sense == 1) {
+                t += '• Sensitivitas kulit kepala: RENDAH.\n';
+                t += '  - Risiko iritasi kecil, namun uji tempel tetap dianjurkan.\n';
+            } else if (sense == 2) {
+                t += '• Sensitivitas kulit kepala: SEDANG.\n';
+                t += '  - Perhatikan jeda antar toning dan pilih purple shampoo/produk berpigmen yang lembut.\n';
+            } else {
+                t += '• Sensitivitas kulit kepala: TINGGI.\n';
+                t += '  - Utamakan produk dengan klaim lembut dan bebas SLS/amonia.\n';
+                t += '  - Gunakan hair mask tanpa pigmen untuk menenangkan kulit bila terjadi iritasi,\n';
+                t += '    dan kurangi frekuensi toning serta pemakaian purple shampoo.\n';
+            }
+
+            return t;
+        }
+
+        function ktRunSim() {
+            const cond = document.getElementById('kt-sim-cond').value;
+            const level = document.getElementById('kt-sim-level').value;
+            const sense = Number(document.getElementById('kt-sim-sense').value);
+            const box = document.getElementById('kt-sim-result');
+            const text = ktBuildSimText(cond, level, sense);
+            box.textContent = text;
+        }
+
+        function ktSaveSim() {
+            const state = {
+                cond: document.getElementById('kt-sim-cond').value,
+                level: document.getElementById('kt-sim-level').value,
+                sense: document.getElementById('kt-sim-sense').value,
+                result: document.getElementById('kt-sim-result').textContent
+            };
+            ktSaveState({ sim: state });
+            const box = document.getElementById('kt-sim-result');
+            box.textContent = '💾 Simulasi tersimpan. Berikut hasil terakhir:\n\n' + state.result;
+        }
+
+        function ktResetSim() {
+            if (!confirm('Yakin reset Simulasi?')) return;
+            document.getElementById('kt-sim-cond').value = 'kuning';
+            document.getElementById('kt-sim-level').value = 'minimal';
+            document.getElementById('kt-sim-sense').value = 2;
+            document.getElementById('kt-sim-result').textContent =
+                'Atur pilihan di atas lalu klik Jalankan Simulasi untuk melihat rekomendasi kombinasi kosmetik toning.';
+            const st = ktLoadState();
+            st.sim = undefined;
+            ktSaveState(st);
+        }
+
+        // ====== RESTORE STATE SAAT HALAMAN DIBUKA ======
+        document.addEventListener('DOMContentLoaded', () => {
+            const state = ktLoadState();
+
+            if (state.match) {
+                ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'].forEach(id => {
+                    if (state.match[id]) {
+                        document.getElementById('kt-' + id).value = state.match[id];
+                    }
+                });
+                if (state.match.feedback) {
+                    document.getElementById('kt-match-feedback').innerHTML = state.match.feedback;
+                }
+            }
+
+            if (state.sim) {
+                document.getElementById('kt-sim-cond').value = state.sim.cond || 'kuning';
+                document.getElementById('kt-sim-level').value = state.sim.level || 'minimal';
+                document.getElementById('kt-sim-sense').value = state.sim.sense || 2;
+                if (state.sim.result) {
+                    document.getElementById('kt-sim-result').textContent = state.sim.result;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
